@@ -32,6 +32,9 @@ enum vga_color {
 	VGA_COLOR_WHITE = 15,
 };
 
+const int INVISIBLE_SYMBOLS_LEN = 1;
+const char INVISIBLE_SYMBOLS[INVISIBLE_SYMBOLS_LEN] = {'\n'};
+
 static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) 
 {
 	return fg | bg << 4;
@@ -78,16 +81,33 @@ void terminal_setcolor(uint8_t color)
 	terminal_color = color;
 }
 
+bool check_is_visible_char(char c){
+	bool isVisible = true;
+
+	for (int i = 0; i < INVISIBLE_SYMBOLS_LEN; i++)
+	{
+		if(INVISIBLE_SYMBOLS[i] == c){
+			isVisible = false;
+			break;
+		}
+	}
+
+	return isVisible;
+}
+
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) 
 {
 	const size_t index = y * VGA_WIDTH + x;
-	terminal_buffer[index] = vga_entry(c, color);
+	bool isVisible = check_is_visible_char(c);
+
+	if(isVisible)
+		terminal_buffer[index] = vga_entry(c, color);
 }
 
 void terminal_putchar(char c) 
 {
 	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-	if (++terminal_column == VGA_WIDTH) {
+	if ((++terminal_column == VGA_WIDTH)|| (c == '\n')) {
 		terminal_column = 0;
 		if (++terminal_row == VGA_HEIGHT)
 			terminal_row = 0;
@@ -111,5 +131,5 @@ extern "C" void kernel_main(void)
 	terminal_initialize();
 
 	/* Newline support is left as an exercise. */
-	terminal_writestring("Hello, kernel World!\n");
+	terminal_writestring("Hello, kernel World!\nnew line check");
 }
