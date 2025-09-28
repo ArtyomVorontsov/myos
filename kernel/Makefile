@@ -1,21 +1,21 @@
-
-# sudo apt-get install g++ binutils libc6-dev-i386
-
-
-GCCPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
-ASPARAMS = --32
+GPPPARAMS = -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti
 LDPARAMS = -melf_i386
+TARGET = i686-elf
 
-objects = loader.o kernel.o
+objects = boot.o kernel.o
 
 %.o: %.cpp
-	$(HOME)/opt/cross/bin/$(TARGET)-gcc $(GCCPARAMS) -c -o $@ $<
+	mkdir -p ./build
+	$(HOME)/opt/cross/bin/$(TARGET)-g++ $(GPPPARAMS) -c -o build/$@ $<
 
 %.o: %.s
-	$(HOME)/opt/cross/bin/$(TARGET)-as $(ASPARAMS) -o $@ $<
+	$(HOME)/opt/cross/bin/$(TARGET)-as $(ASPARAMS) -o build/$@ $<
 
-mykernel.bin: linker.ld $(objects)
-	$(HOME)/opt/cross/bin/$(TARGET)-ld $(LDPARAMS) -T $< -o $@ $(objects)
+myos.bin: linker.ld $(objects)
+	$(HOME)/opt/cross/bin/$(TARGET)-gcc -ffreestanding -O2 -nostdlib ./build/boot.o ./build/kernel.o -lgcc -T linker.ld -o ./build/myos.bin  
 
-install: mykernel.bin
-	sudo cp $< /boot/mykernel.bin
+install: myos.bin
+	sudo cp $< /boot/myos.bin
+
+cleanup: 
+	rm -f *.out *.o
