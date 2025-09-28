@@ -9,6 +9,7 @@ objects = boot.o kernel.o
 	$(HOME)/opt/cross/bin/$(TARGET)-g++ $(GPPPARAMS) -c -o build/$@ $<
 
 %.o: %.s
+	mkdir -p ./build
 	$(HOME)/opt/cross/bin/$(TARGET)-as $(ASPARAMS) -o build/$@ $<
 
 myos.bin: linker.ld $(objects)
@@ -18,4 +19,4 @@ install: myos.bin
 	sudo cp $< /boot/myos.bin
 
 cleanup: 
-	rm -f *.out *.o
+	rm -rf build

@@ -4,6 +4,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 cd $SCRIPT_DIR
 
+mkdir -p $SCRIPT_DIR/../script-temp
+
+cd $SCRIPT_DIR/../script-temp
+
 mkdir -p isodir
 mkdir -p isodir/boot
 mkdir -p isodir/boot/grub
@@ -12,7 +16,5 @@ echo "menuentry \"myos\" {" >> isodir/boot/grub/grub.cfg
 echo	"multiboot /boot/myos.bin" >> isodir/boot/grub/grub.cfg
 echo "}" >> isodir/boot/grub/grub.cfg
 
-cd -
-grub-mkrescue -o myos.iso $SCRIPT_DIR/isodir
-rm -r $SCRIPT_DIR/isodir
+grub-mkrescue -o $SCRIPT_DIR/../script-temp/myos.iso $SCRIPT_DIR/../script-temp/isodir
 
