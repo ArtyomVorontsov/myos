@@ -125,11 +125,36 @@ void terminal_writestring(const char* data)
 	terminal_write(data, strlen(data));
 }
 
+
+// Machine specific stupid realization of sleep
+void sleep(int ms){
+
+	for (int i = 0; i < ms * 50; i++)
+	{
+		for (int i = 0; i < ms * 10; i++)
+		{
+			asm volatile("" ::: "memory");	
+		}
+	}
+	
+	
+}
+
 extern "C" void kernel_main(void) 
 {
+	char s[3];
+	s[0] = 64;
+	s[1] = '\n';
+	s[2] = '\0';
+
 	/* Initialize terminal interface */
 	terminal_initialize();
 
 	/* Newline support is left as an exercise. */
-	terminal_writestring("Hello, kernel World!\nnew line check");
+
+	for(int i = 0; i < 100; i++){
+		sleep(500);
+		terminal_writestring(s);
+		s[0]++;
+	}
 }
