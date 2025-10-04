@@ -1,3 +1,3 @@
-build
-isodir
 *.iso
+isodir
+sysroot
