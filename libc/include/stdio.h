@@ -5,14 +5,15 @@
 
 #define EOF (-1)
 
-#ifdef __cpusplus
-extern "C" {
+#ifdef __cplusplus
+extern "C"
+{
 #endif
-int printf(const char* __restrict, ...);
-int putchar(int);
-int puts(const char*);
+    int printf(const char *__restrict, ...);
+    int putchar(int);
+    int puts(const char *);
 
-#ifdef __cpusplus
+#ifdef __cplusplus
 }
 #endif
 

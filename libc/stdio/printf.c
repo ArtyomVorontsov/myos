@@ -13,7 +13,7 @@ static bool print(const char *data, size_t length)
     return true;
 }
 
-int printf(const char *restrict format, ...)
+int printf(const char *__restrict__ format, ...)
 {
     va_list parameters;
     va_start(parameters, format);

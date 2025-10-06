@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#if defined(__islibk)
+#if defined(__is_libk)
 #include <kernel/tty.h>
 #endif
 

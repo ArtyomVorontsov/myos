@@ -1,6 +1,6 @@
 #include <string.h>
 
-void *memcpy(void *restrict dstptr, const void *restrict srcptr, size_t size)
+void *memcpy(void *__restrict__ dstptr, const void *__restrict__ srcptr, size_t size)
 {
 
     unsigned char *dst = (unsigned char *)dstptr;
