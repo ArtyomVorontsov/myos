@@ -9,6 +9,9 @@ extern "C" {
 
 __attribute__((__noreturn__))
 void abort(void);
+void malloc(void);
+void free(void);
+void __gxx_personality_v0(void);
 
 #ifdef __cplusplus
 }
