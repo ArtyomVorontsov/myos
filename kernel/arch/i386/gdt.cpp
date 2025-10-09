@@ -13,10 +13,6 @@ GlobalDescriptorTable::GlobalDescriptorTable()
     asm volatile("lgdt (%0)" : : "r"(((uint8_t *)i) + 2));
 }
 
-GlobalDescriptorTable::~GlobalDescriptorTable()
-{
-}
-
 uint16_t GlobalDescriptorTable::DataSegmentSelector()
 {
     return (uint8_t *)&dataSegmentSelector - (uint8_t *)this;

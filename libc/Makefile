@@ -33,9 +33,6 @@ stdio/printf.o \
 stdio/putchar.o \
 stdio/puts.o \
 stdlib/abort.o \
-stdlib/malloc.o \
-stdlib/free.o \
-stdlib/__gxx_personality_v0.o \
 string/memcmp.o \
 string/memcpy.o \
 string/memmove.o \
