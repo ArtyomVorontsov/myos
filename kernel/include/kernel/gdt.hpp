@@ -1,6 +1,6 @@
 #ifndef __GDT_H
 #define __GDT_H 1
-#include <stdint.h>
+#include <types.h>
 
 class SegmentDescriptor
 {
