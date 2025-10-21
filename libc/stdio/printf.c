@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include "types.h"
 
 static bool print(const char *data, size_t length)
 {
@@ -11,6 +12,60 @@ static bool print(const char *data, size_t length)
         if (putchar(bytes[i]) == EOF)
             return false;
     return true;
+}
+
+// Converts int16_t to string, returns length of the string
+size_t int16_to_str(int16_t value, char *buffer)
+{
+    char temp[6]; // Max int16_t is -32768 (5 digits + sign)
+    size_t i = 0;
+    int is_negative = 0;
+
+    if (value == 0)
+    {
+        buffer[0] = '0';
+        buffer[1] = '\0';
+        return 1;
+    }
+
+    if (value < 0)
+    {
+        is_negative = 1;
+        // Handle edge case: -32768
+        if (value == -32768)
+        {
+            buffer[0] = '-';
+            buffer[1] = '3';
+            buffer[2] = '2';
+            buffer[3] = '7';
+            buffer[4] = '6';
+            buffer[5] = '8';
+            buffer[6] = '\0';
+            return 6;
+        }
+        value = -value;
+    }
+
+    // Extract digits
+    while (value != 0)
+    {
+        temp[i++] = '0' + (value % 10);
+        value /= 10;
+    }
+
+    size_t len = 0;
+    if (is_negative)
+    {
+        buffer[len++] = '-';
+    }
+
+    // Reverse digits into final buffer
+    while (i > 0)
+    {
+        buffer[len++] = temp[--i];
+    }
+    buffer[len] = '\0';
+    return len;
 }
 
 int printf(const char *__restrict__ format, ...)
@@ -71,6 +126,25 @@ int printf(const char *__restrict__ format, ...)
             if (!print(str, len))
                 return -1;
             written += len;
+        }
+        else if (*format == 'd')
+        {
+            format++;
+            int num = (int)va_arg(parameters, int /* char promotes to int */);
+            if (!maxrem)
+            {
+                // TODO: Set errno to EOVERFLOW.
+                return -1;
+            }
+
+            char buf[8];
+            int16_to_str(num, buf);
+            buf[7] = '\0';
+            size_t len = strlen(buf);
+
+            if (!print(buf, len))
+                return -1;
+            written++;
         }
         else
         {
