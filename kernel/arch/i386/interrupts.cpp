@@ -11,15 +11,14 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     uint8_t DescriptorType)
 {
     // Address of pointer to code segment (relative to global descriptor table)
-    // and address pf the handler (relative to segment)
-
+    // and address of the handler (relative to segment)
     interruptDescriptorTable[interrupt].handlerAddressLowBits = ((uint32_t)handler) & 0xFFFF;
-    interruptDescriptorTable[interrupt].handlerAddressLowBits = ((uint32_t)handler >> 16) & 0xFFFF;
+    interruptDescriptorTable[interrupt].handlerAddressHighBits = (((uint32_t)handler) >> 16) & 0xFFFF;
     interruptDescriptorTable[interrupt].gdt_codeSegmentSelector = CodeSegment;
 
     const uint8_t IDT_DESC_PRESENT = 0x80;
     interruptDescriptorTable[interrupt].access = IDT_DESC_PRESENT | ((DescriptorPrivilegeLevel & 3) << 5) | DescriptorType;
-    interruptDescriptorTable[interrupt].reversed = 0;
+    interruptDescriptorTable[interrupt].reserved = 0;
 }
 
 InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescriptorTable *globalDescriptorTable)
@@ -43,7 +42,7 @@ InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescr
             IDT_INTERRUPT_GATE);
         // handlers[i] = 0;
     }
-
+    
     SetInterruptDescriptorTableEntry(0, CodeSegment, &InterruptIgnore, 0, IDT_INTERRUPT_GATE);
     // handlers[0] = 0;
 

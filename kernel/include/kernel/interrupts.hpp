@@ -1,3 +1,4 @@
+
 #ifndef __INTERRUPTMANAGER_H
 #define __INTERRUPTMANAGER_H
 
@@ -7,14 +8,15 @@
 
 class InterruptManager
 {
-
+    // friend class InterruptHandler;
+protected:
     struct GateDescriptor
     {
         uint16_t handlerAddressLowBits;
         uint16_t gdt_codeSegmentSelector;
-        uint8_t reversed;
+        uint8_t reserved;
         uint8_t access;
-        uint8_t handlerAddressHighBits;
+        uint16_t handlerAddressHighBits;
     } __attribute__((packed));
 
     static GateDescriptor interruptDescriptorTable[256];
@@ -26,13 +28,10 @@ class InterruptManager
     } __attribute__((packed));
 
     uint16_t hardwareInterruptOffset;
-
-    static void SetInterruptDescriptorTableEntry(
-        uint8_t interrupt,
-        uint16_t codeSegmentSelectorOffset,
-        void (*handler)(),
-        uint8_t DescriptorPrivilegeLevel,
-        uint8_t DescriptorType);
+    // static InterruptManager* ActiveInterruptManager;
+    static void SetInterruptDescriptorTableEntry(uint8_t interrupt,
+                                                 uint16_t codeSegmentSelectorOffset, void (*handler)(),
+                                                 uint8_t DescriptorPrivilegeLevel, uint8_t DescriptorType);
 
     static void InterruptIgnore();
 
@@ -88,5 +87,4 @@ public:
     void Activate();
     void Deactivate();
 };
-
 #endif

@@ -10,14 +10,14 @@ GlobalDescriptorTable::GlobalDescriptorTable()
 
     struct GDTR
     {
-        uint32_t address;
-        uint16_t size;
+        uint16_t limit;
+        uint32_t base;
     } __attribute__((packed));
 
     GDTR gdtr;
 
-    gdtr.address = (uint32_t)this;
-    gdtr.size = sizeof(GlobalDescriptorTable);
+    gdtr.base = (uint32_t)this;
+    gdtr.limit = sizeof(GlobalDescriptorTable);
 
     asm volatile("lgdt %0" : : "m"(gdtr));
 

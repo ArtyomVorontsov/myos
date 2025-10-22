@@ -10,7 +10,5 @@
 [x] Meaty Skeleton Tutorial
 
 
-# we have issues with GDT loading as well as IDT loading
-# need to check if GDT is setup properly as well as IDT
 
 
