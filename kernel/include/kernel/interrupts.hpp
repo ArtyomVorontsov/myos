@@ -35,6 +35,7 @@ protected:
 
     static void InterruptIgnore();
 
+    // Defined in interruptstubs.S
     static void HandleInterruptRequest0x00();
     static void HandleInterruptRequest0x01();
     static void HandleInterruptRequest0x02();
@@ -53,6 +54,7 @@ protected:
     static void HandleInterruptRequest0x0F();
     static void HandleInterruptRequest0x31();
 
+    // Defined in interruptstubs.S
     static void HandleException0x00();
     static void HandleException0x01();
     static void HandleException0x02();
