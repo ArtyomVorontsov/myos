@@ -1,7 +1,20 @@
 #include <kernel/interrupts.hpp>
 #include "stdio.h"
 
+InterruptHandler::InterruptHandler(InterruptManager *interruptManager, uint8_t InterruptNumber)
+{
+    this->InterruptNumber = InterruptNumber;
+    this->interruptManager = interruptManager;
+    interruptManager->handlers[InterruptNumber] = this;
+}
+
+uint32_t InterruptHandler::HandleInterrupt(uint32_t esp)
+{
+    return esp;
+}
+
 InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
+InterruptManager *InterruptManager::ActiveInterruptManager = 0;
 
 void InterruptManager::SetInterruptDescriptorTableEntry(
     uint8_t interrupt,
@@ -40,11 +53,9 @@ InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescr
             &InterruptIgnore,
             0,
             IDT_INTERRUPT_GATE);
-        // handlers[i] = 0;
     }
-    
+
     SetInterruptDescriptorTableEntry(0, CodeSegment, &InterruptIgnore, 0, IDT_INTERRUPT_GATE);
-    // handlers[0] = 0;
 
     SetInterruptDescriptorTableEntry(0x00, CodeSegment, &HandleException0x00, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(0x01, CodeSegment, &HandleException0x01, 0, IDT_INTERRUPT_GATE);
@@ -84,22 +95,29 @@ InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescr
     SetInterruptDescriptorTableEntry(hardwareInterruptOffset + 0x0E, CodeSegment, &HandleInterruptRequest0x0E, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(hardwareInterruptOffset + 0x0F, CodeSegment, &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE);
 
-    programmableInterruptControllerMasterCommandPort.Write(0x11);
-    programmableInterruptControllerSlaveCommandPort.Write(0x11);
+    // Reprogram PIC
+    // Initialization Command Word 1 (ICW1) for the Intel 8259 Programmable Interrupt Controller (PIC).
+    int ICW1 = 0x11;
+    programmableInterruptControllerMasterCommandPort.Write(ICW1);
+    programmableInterruptControllerSlaveCommandPort.Write(ICW1);
 
-    // remap
+    // Set new interrupt vector offsets
     programmableInterruptControllerMasterDataPort.Write(hardwareInterruptOffset);
     programmableInterruptControllerSlaveDataPort.Write(hardwareInterruptOffset + 8);
 
+    // Tell master and slave how they are connected 
     programmableInterruptControllerMasterDataPort.Write(0x04);
     programmableInterruptControllerSlaveDataPort.Write(0x02);
 
+    // Set modes
     programmableInterruptControllerMasterDataPort.Write(0x01);
     programmableInterruptControllerSlaveDataPort.Write(0x01);
 
+    // Restore saved masks
     programmableInterruptControllerMasterDataPort.Write(0x00);
     programmableInterruptControllerSlaveDataPort.Write(0x00);
 
+    // Init Interrupt Descriptor Table (IDT)
     InterruptDescriptorTablePointer idt_pointer;
     idt_pointer.size = 256 * sizeof(GateDescriptor) - 1;
     idt_pointer.base = (uint32_t)interruptDescriptorTable;
@@ -114,22 +132,64 @@ uint16_t InterruptManager::HardwareInterruptOffset()
 
 void InterruptManager::Activate()
 {
+    if (ActiveInterruptManager != 0)
+        ActiveInterruptManager->Deactivate();
+
+    ActiveInterruptManager = this;
     asm("sti");
 }
 
 void InterruptManager::Deactivate()
 {
-    asm("cli");
+    if (ActiveInterruptManager == this)
+    {
+        ActiveInterruptManager = 0;
+        asm("cli");
+    }
 }
 
 uint32_t InterruptManager::HandleInterrupt(uint8_t interrupt, uint32_t esp)
 {
-    char *foo = "INTERRUPT 0x00";
-    char *hex = "0123456789ABCDEF";
+    if (ActiveInterruptManager != 0)
+    {
+        return ActiveInterruptManager->DoHandleInterrupt(interrupt, esp);
+    }
 
-    foo[12] = hex[(interrupt >> 4) & 0xF];
-    foo[13] = hex[interrupt & 0xF];
-    printf(foo);
+    return esp;
+}
+
+uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t esp)
+{
+    if (handlers[interruptNumber] != 0)
+    {
+        esp = handlers[interruptNumber]->HandleInterrupt(esp);
+    }
+    else if (interruptNumber > hardwareInterruptOffset)
+    {
+        char *foo = "UNHANDLED INTERRUPT 0x00";
+        char *hex = "0123456789ABCDEF";
+        foo[22] = hex[(interruptNumber >> 4) & 0xF];
+        foo[23] = hex[interruptNumber & 0xF];
+
+        printf(foo);
+    }
+
+    // Hardwire interrupt must be aknowledged in order to receive futher interrupts
+    bool isHardwireInterrupt = hardwareInterruptOffset <= interruptNumber && interruptNumber < hardwareInterruptOffset + 16;
+    if (isHardwireInterrupt)
+    {
+        // End of interrupt command code,
+        // we need to send it in order to clear "in service" bit
+        // inside programmable interrupt controller (PIC)
+        int EOI = 0x20;
+
+        programmableInterruptControllerMasterCommandPort.Write(EOI);
+        bool resetSlavePIC = hardwareInterruptOffset + 8 <= interruptNumber;
+        if (resetSlavePIC)
+        {
+            programmableInterruptControllerSlaveCommandPort.Write(EOI);
+        }
+    }
 
     return esp;
 }
