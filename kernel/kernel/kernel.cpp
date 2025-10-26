@@ -3,6 +3,7 @@
 #include <kernel/gdt.hpp>
 #include <kernel/interrupts.hpp>
 #include <kernel/keyboard.hpp>
+#include <kernel/mouse.hpp>
 
 extern "C" void kernel_main(void)
 {
@@ -11,6 +12,7 @@ extern "C" void kernel_main(void)
 
 	GlobalDescriptorTable gdt;
 	InterruptManager interrupts(0x20, &gdt);
+	MouseDriver mouse(&interrupts);
 	KeyboardDriver keyboardDrive(&interrupts);
 
 	interrupts.Activate();
