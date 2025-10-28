@@ -5,12 +5,38 @@
 #include <string.h>
 #include "types.h"
 
+
+// Cursor variables
+static int x = 0;
+static int y = 0;
+
 static bool print(const char *data, size_t length)
 {
     const unsigned char *bytes = (const unsigned char *)data;
     for (size_t i = 0; i < length; i++)
+    {
+        // TODO: Improve cursor handling
+        x++;
+
+        if (bytes[i] == '\n')
+        {
+
+            for (int i = x; i < 80; i++)
+            {
+                putchar(' ');
+                x++;
+            }
+        }
+
+        if (x >= 80)
+        {
+            x = 0;
+            y++;
+        }
+
         if (putchar(bytes[i]) == EOF)
             return false;
+    }
     return true;
 }
 

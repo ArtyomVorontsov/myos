@@ -105,7 +105,7 @@ InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescr
     programmableInterruptControllerMasterDataPort.Write(hardwareInterruptOffset);
     programmableInterruptControllerSlaveDataPort.Write(hardwareInterruptOffset + 8);
 
-    // Tell master and slave how they are connected 
+    // Tell master and slave how they are connected
     programmableInterruptControllerMasterDataPort.Write(0x04);
     programmableInterruptControllerSlaveDataPort.Write(0x02);
 
@@ -166,12 +166,8 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
     }
     else if (interruptNumber > hardwareInterruptOffset)
     {
-        char *foo = "UNHANDLED INTERRUPT 0x00";
-        char *hex = "0123456789ABCDEF";
-        foo[22] = hex[(interruptNumber >> 4) & 0xF];
-        foo[23] = hex[interruptNumber & 0xF];
-
-        printf(foo);
+        printf("UNHANDLED INTERRUPT");
+        printfHex(interruptNumber);
     }
 
     // Hardwire interrupt must be aknowledged in order to receive futher interrupts
