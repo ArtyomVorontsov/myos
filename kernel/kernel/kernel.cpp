@@ -6,63 +6,8 @@
 #include <driver/mouse.hpp>
 #include <driver/driver.hpp>
 #include <driver/driver-manager.hpp>
-
-class PrintKeyboardEventHandler : public KeyboardEventHandler
-{
-public:
-	void OnKeyDown(char c)
-	{
-		char *foo = " ";
-		foo[0] = c;
-		printf(foo);
-	};
-};
-
-class PrintMouseEventHandler : public MouseEventHandler
-{
-
-	int8_t x, y;
-
-public:
-	virtual void OnActivate()
-	{
-
-		uint16_t *VideoMemory = (uint16_t *)0xb8000;
-
-		x = 40;
-		y = 12;
-
-		// Invert color on startup position
-		VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0x0F00) << 4 |
-								  (VideoMemory[80 * y + x] & 0x0F000) >> 4 |
-								  (VideoMemory[80 * y + x] & 0x00FF);
-	};
-
-	virtual void OnMouseMove(int xOffset, int yOffset)
-	{
-		// Invert color of previous position
-		static uint16_t *VideoMemory = (uint16_t *)0xb8000;
-		VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0x0F00) << 4 |
-								  (VideoMemory[80 * y + x] & 0x0F000) >> 4 |
-								  (VideoMemory[80 * y + x] & 0x00FF);
-
-		x += xOffset;
-		if (x >= 80)
-			x = 79;
-		if (x < 0)
-			x = 0;
-		y -= yOffset;
-		if (y >= 25)
-			y = 24;
-		if (y < 0)
-			y = 0;
-
-		// Invert color of current position
-		VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0x0F00) << 4 |
-								  (VideoMemory[80 * y + x] & 0x0F000) >> 4 |
-								  (VideoMemory[80 * y + x] & 0x00FF);
-	};
-};
+#include <event-handler/print-keyboard-event-handler.hpp>
+#include <event-handler/print-mouse-event-handler.hpp>
 
 extern "C" void
 kernel_main(void)
