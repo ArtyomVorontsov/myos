@@ -2,7 +2,7 @@
 #define __MOUSE_H
 
 #include <types.h>
-#include <kernel/port.hpp>
+#include <hardwirecommunication/port.hpp>
 #include <kernel/interrupts.hpp>
 #include <driver/driver.hpp>
 #include <event-handler/mouse-event-handler.hpp>
