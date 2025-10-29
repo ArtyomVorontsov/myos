@@ -2,6 +2,7 @@
 #define _STDIO_H 1
 
 #include <sys/cdefs.h>
+#include <types.h>
 
 #define EOF (-1)
 
@@ -12,7 +13,7 @@ extern "C"
     int printf(const char *__restrict__ format, ...);
     int putchar(int);
     int puts(const char *);
-    int printfHex(char);
+    void printfHex(uint8_t);
 
 #ifdef __cplusplus
 }

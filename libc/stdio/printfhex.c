@@ -1,11 +1,12 @@
 
 #include <stdio.h>
+#include <types.h>
 
-int printfHex(char key)
+void printfHex(uint8_t key)
 {
-    char *foo = "0x00";
+    char *foo = "00";
     char *hex = "0123456789ABCDEF";
-    foo[2] = hex[(key >> 4) & 0xF];
-    foo[3] = hex[key & 0xF];
+    foo[0] = hex[(key >> 4) & 0xF];
+    foo[1] = hex[key & 0xF];
     printf(foo);
 }

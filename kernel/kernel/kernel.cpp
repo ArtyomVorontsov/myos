@@ -8,6 +8,7 @@
 #include <driver/driver-manager.hpp>
 #include <event-handler/print-keyboard-event-handler.hpp>
 #include <event-handler/print-mouse-event-handler.hpp>
+#include <hardwirecommunication/pci.hpp>
 
 extern "C" void
 kernel_main(void)
@@ -30,7 +31,10 @@ kernel_main(void)
 	driverManager.AddDriver(&mouseDriver);
 	driverManager.AddDriver(&keyboardDriver);
 
-	printf("Initializing Hardware, Stage 2\n");
+	PeripheralComponentInterconnectController PCIController;
+	PCIController.SelectDrivers(&driverManager);
+
+		printf("Initializing Hardware, Stage 2\n");
 	driverManager.ActivateAll();
 
 	printf("Initializing Hardware, Stage 3\n");
