@@ -2,6 +2,7 @@
 #define __MYOS__HARDWIRECOMMUNICATION__PCI_H
 
 #include <hardwirecommunication/port.hpp>
+#include <hardwirecommunication/bar.hpp>
 #include <driver/driver.hpp>
 #include <driver/driver-manager.hpp>
 #include <types.h>
@@ -49,7 +50,9 @@ public:
 
     bool DeviceHasFunctions(uint16_t bus, uint16_t device);
 
-    void SelectDrivers(DriverManager *driverManager);
+    void SelectDrivers(DriverManager *driverManager, InterruptManager *interruptManager);
+    Driver *GetDriver(PeripheralComponentInterconnectDeviceDescriptor dev, InterruptManager *interruptManager);
+    BaseAddressRegister GetBaseAddressRegister(uint16_t bus, uint16_t device, uint16_t function, uint16_t barNumber);
 
     PeripheralComponentInterconnectDeviceDescriptor GetDeviceDescriptor(
         uint16_t bus,

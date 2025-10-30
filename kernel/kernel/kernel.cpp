@@ -17,28 +17,28 @@ kernel_main(void)
 	printf("Hello, MYOS C++ kernel\n");
 
 	GlobalDescriptorTable gdt;
-	InterruptManager interrupts(0x20, &gdt);
+	InterruptManager interruptManager(0x20, &gdt);
 
 	printf("Initializing Hardware, Stage 1\n");
 
 	DriverManager driverManager;
 
 	PrintMouseEventHandler printMouseEventHandler;
-	MouseDriver mouseDriver(&interrupts, &printMouseEventHandler);
+	MouseDriver mouseDriver(&interruptManager, &printMouseEventHandler);
 	PrintKeyboardEventHandler printKeyboardDriverHandler;
-	KeyboardDriver keyboardDriver(&interrupts, &printKeyboardDriverHandler);
+	KeyboardDriver keyboardDriver(&interruptManager, &printKeyboardDriverHandler);
 
 	driverManager.AddDriver(&mouseDriver);
 	driverManager.AddDriver(&keyboardDriver);
 
 	PeripheralComponentInterconnectController PCIController;
-	PCIController.SelectDrivers(&driverManager);
+	PCIController.SelectDrivers(&driverManager, &interruptManager);
 
-		printf("Initializing Hardware, Stage 2\n");
+	printf("Initializing Hardware, Stage 2\n");
 	driverManager.ActivateAll();
 
 	printf("Initializing Hardware, Stage 3\n");
-	interrupts.Activate();
+	interruptManager.Activate();
 
 	while (1)
 		;
