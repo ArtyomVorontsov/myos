@@ -45,6 +45,8 @@ kernel_main(void)
 
 	vga.SetMode(320, 200, 8);
 
+	vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
+
 	for (int32_t y = 0; y < 200; y++)
 	{
 		for (int32_t x = 0; x < 320; x++)
