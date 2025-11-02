@@ -126,18 +126,33 @@ uint8_t *VideoGrapicsArray::GetFrameBufferSegment()
     }
 }
 
-void VideoGrapicsArray::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex)
+void VideoGrapicsArray::PutPixel(int32_t x, int32_t y, uint8_t colorIndex)
 {
+    // // Handle frame buffer overrun
+    if (x < 0 || 320 <= x || y < 0 || 200 <= y)
+    {
+        return;
+    }
     uint8_t *pixelAddress = GetFrameBufferSegment() + 320 * y + x;
     *pixelAddress = colorIndex;
 }
 
 uint8_t VideoGrapicsArray::GetColorIndex(uint8_t r, uint8_t g, uint8_t b)
 {
+    if (r == 0x00 && g == 0x00 && b == 0x00)
+        return 0x00; // black
+
     if (r == 0x00 && g == 0x00 && b == 0xA8)
-    {
-        return 0x01;
-    }
+        return 0x01; // blue
+
+    if (r == 0x00 && g == 0xA8 && b == 0x00)
+        return 0x02; // green
+
+    if (r == 0xA8 && g == 0x00 && b == 0x00)
+        return 0x04; // red
+
+    if (r == 0xFF && g == 0xFF && b == 0xFF)
+        return 0x3F; // white
 
     return 0x00;
 }
@@ -149,11 +164,11 @@ void VideoGrapicsArray::PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, u
 
 void VideoGrapicsArray::FillRectangle(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t r, uint8_t g, uint8_t b)
 {
-    for (int32_t y = 0; y < 200; y++)
+    for (int32_t Y = y; Y < y + h; Y++)
     {
-        for (int32_t x = 0; x < 320; x++)
+        for (int32_t X = x; X < x + w; X++)
         {
-            PutPixel(x, y, r, g, b);
+            PutPixel(X, Y, r, g, b);
         }
     }
 }

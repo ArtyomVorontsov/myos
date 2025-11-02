@@ -3,8 +3,9 @@
 
 #include <types.h>
 #include <common/graphics-context.hpp>
+#include <driver/keyboard.hpp>
 
-class Widget
+class Widget : public KeyboardEventHandler
 {
 protected:
     Widget *parent;
@@ -33,12 +34,10 @@ public:
     virtual void GetFocus(Widget *widget);
     virtual void ModelToScreen(int32_t &x, int32_t &y);
     virtual void Draw(GraphicsContext *gc);
-    virtual void OnMouseDown(int32_t x, int32_t y);
-    virtual void OnMouseUp(int32_t x, int32_t y);
+    virtual void OnMouseDown(int32_t x, int32_t y, uint8_t button);
+    virtual void OnMouseUp(int32_t x, int32_t y, uint8_t button);
     virtual void OnMouseMove(int32_t oldX, int32_t oldY, int32_t newX, int32_t newY);
-    virtual void OnKeyDown(char *str);
-    virtual void OnKeyUp(char *str);
-    bool ContainsCoordinate(int32_t x, int32_t y);
+    virtual bool ContainsCoordinate(int32_t x, int32_t y);
 };
 
 class CompositeWidget : public Widget
@@ -60,13 +59,14 @@ public:
         uint8_t g,
         uint8_t b);
 
-    void GetFocus(Widget *widget);
-    void Draw(GraphicsContext *gc);
-    void OnMouseDown(int32_t x, int32_t y);
-    void OnMouseUp(int32_t x, int32_t y);
-    void OnMouseMove(int32_t oldX, int32_t oldY, int32_t newX, int32_t newY);
-    void OnKeyDown(char *str);
-    void OnKeyUp(char *str);
+    virtual void GetFocus(Widget *widget);
+    virtual bool AddChild(Widget *child);
+    virtual void Draw(GraphicsContext *gc);
+    virtual void OnMouseDown(int32_t x, int32_t y, uint8_t button);
+    virtual void OnMouseUp(int32_t x, int32_t y, uint8_t button);
+    virtual void OnMouseMove(int32_t oldX, int32_t oldY, int32_t newX, int32_t newY);
+    virtual void OnKeyDown(char c);
+    virtual void OnKeyUp(char c);
 };
 
 #endif
