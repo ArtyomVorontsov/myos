@@ -1,4 +1,5 @@
 #include <gui/desktop.hpp>
+#include <gui/text.hpp>
 
 Desktop::Desktop(int32_t w, int32_t h, uint8_t r, uint8_t g, uint8_t b)
     : CompositeWidget(0, 0, 0, w, h, r, g, b),
@@ -20,6 +21,8 @@ void Desktop::Draw(GraphicsContext *gc)
         gc->PutPixelOnScreen(MouseX, MouseY - i, 0xFF, 0xFF, 0xFF);
         gc->PutPixelOnScreen(MouseX, MouseY + i, 0xFF, 0xFF, 0xFF);
     }
+
+    Text::printString("MY OS v0.0.0", gc);
 }
 
 void Desktop::OnMouseDown(uint8_t button)
