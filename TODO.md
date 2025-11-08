@@ -25,3 +25,8 @@
 
 # 30 Oct
 # read https://wiki.osdev.org/PCI 
+
+# 2 Nov
+# read https://wiki.osdev.org/GUI
+# rewatch intro https://www.youtube.com/watch?v=3fTVUqILuYw&list=PLHh55M_Kq4OApWScZyPl5HhgsTJS9MZ6M&index=14
+# add frame buffering to fix flickering https://github.com/sloganking/My-Own-OS/commit/dbc336ff3052cb482f4e6372afe66290df0007e0

@@ -74,6 +74,7 @@ kernel_main(void)
 	{
 #ifdef GRAPHICS_MODE
 		desktop.Draw(&vga);
+		vga.RenderScreen();
 #endif
 	};
 }

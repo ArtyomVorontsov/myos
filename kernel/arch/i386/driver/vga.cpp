@@ -1,6 +1,11 @@
 
 #include <driver/vga.hpp>
 
+const int SCREEN_WIDTH = 320;
+const int SCREEN_HEIGHT = 200;
+
+static uint8_t screen[SCREEN_WIDTH][SCREEN_HEIGHT];
+
 VideoGrapicsArray::VideoGrapicsArray()
     : miscPort(0x3c2),
       crtcIndexPort(0x3d4),
@@ -15,6 +20,7 @@ VideoGrapicsArray::VideoGrapicsArray()
       attributeControllerResetPort(0x3da)
 
 {
+    this->InitScreen();
 }
 
 void VideoGrapicsArray::WriteRegisters(uint8_t *registers)
@@ -68,7 +74,7 @@ void VideoGrapicsArray::WriteRegisters(uint8_t *registers)
 
 bool VideoGrapicsArray::SupportsMode(uint32_t width, uint32_t height, uint32_t colorDepth)
 {
-    return width == 320 && height == 200 && colorDepth == 8;
+    return width == SCREEN_WIDTH && height == SCREEN_HEIGHT && colorDepth == 8;
 }
 
 bool VideoGrapicsArray::SetMode(uint32_t width, uint32_t height, uint32_t colorDepth)
@@ -78,7 +84,7 @@ bool VideoGrapicsArray::SetMode(uint32_t width, uint32_t height, uint32_t colorD
         return false;
     }
 
-    unsigned char g_320x200x256[] =
+    unsigned char g_SCREEN_WIDTHxSCREEN_HEIGHTx256[] =
         {
             /* MISC */
             0x63,
@@ -101,7 +107,7 @@ bool VideoGrapicsArray::SetMode(uint32_t width, uint32_t height, uint32_t colorD
             0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
             0x41, 0x00, 0x0F, 0x00, 0x00};
 
-    WriteRegisters(g_320x200x256);
+    WriteRegisters(g_SCREEN_WIDTHxSCREEN_HEIGHTx256);
     return true;
 }
 
@@ -129,11 +135,11 @@ uint8_t *VideoGrapicsArray::GetFrameBufferSegment()
 void VideoGrapicsArray::PutPixel(int32_t x, int32_t y, uint8_t colorIndex)
 {
     // // Handle frame buffer overrun
-    if (x < 0 || 320 <= x || y < 0 || 200 <= y)
+    if (x < 0 || SCREEN_WIDTH <= x || y < 0 || SCREEN_HEIGHT <= y)
     {
         return;
     }
-    uint8_t *pixelAddress = GetFrameBufferSegment() + 320 * y + x;
+    uint8_t *pixelAddress = GetFrameBufferSegment() + SCREEN_WIDTH * y + x;
     *pixelAddress = colorIndex;
 }
 
@@ -162,13 +168,41 @@ void VideoGrapicsArray::PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, u
     PutPixel(x, y, GetColorIndex(r, g, b));
 }
 
+void VideoGrapicsArray::PutPixelOnScreen(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
+{
+    screen[x][y] = GetColorIndex(r, g, b);
+}
+
 void VideoGrapicsArray::FillRectangle(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t r, uint8_t g, uint8_t b)
 {
     for (int32_t Y = y; Y < y + h; Y++)
     {
         for (int32_t X = x; X < x + w; X++)
         {
-            PutPixel(X, Y, r, g, b);
+            PutPixelOnScreen(X, Y, r, g, b);
+        }
+    }
+}
+
+void VideoGrapicsArray::RenderScreen()
+{
+    for (int32_t y = 0; y < SCREEN_HEIGHT; y++)
+    {
+        for (int32_t x = 0; x < SCREEN_WIDTH; x++)
+        {
+            PutPixel(x, y, screen[x][y]);
+        }
+    }
+}
+
+void VideoGrapicsArray::InitScreen()
+{
+
+    for (int32_t y = 0; y < SCREEN_HEIGHT; y++)
+    {
+        for (int32_t x = 0; x < SCREEN_WIDTH; x++)
+        {
+            screen[x][y] = 0x00;
         }
     }
 }
