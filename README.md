@@ -4,6 +4,15 @@
 A custom **Operating System** written entirely from scratch in **C++** and **x86 Assembly**, built for learning and experimentation in low-level systems programming.  
 The project is fully functional up to a graphical desktop environment and has been thoroughly tested in virtualized environments.  
 
+
+## 🖼️ Screenshots  
+
+### Basic I/O (Text Mode)
+![Basic I/O in Text Mode](screenshots/basic-io.png)
+
+### VGA Graphics Mode
+![VGA Graphics Mode](screenshots/vga-mode.png)
+
 🧩 **Inspired by:**  
 - [Write Your Own Operating System (YouTube)](https://www.youtube.com/@writeyourownoperatingsystem)  
 - [OSDev Wiki](https://wiki.osdev.org)  
