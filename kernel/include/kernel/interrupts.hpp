@@ -4,7 +4,7 @@
 
 #include "gdt.hpp"
 #include "types.h"
-#include <hardwirecommunication/port.hpp>
+#include <hardwarecommunication/port.hpp>
 
 class InterruptManager;
 

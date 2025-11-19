@@ -3,7 +3,7 @@
 
 #include <types.h>
 #include <kernel/interrupts.hpp>
-#include <hardwirecommunication/port.hpp>
+#include <hardwarecommunication/port.hpp>
 #include <driver/driver.hpp>
 #include <event-handler/keyboard-event-handler.hpp>
 

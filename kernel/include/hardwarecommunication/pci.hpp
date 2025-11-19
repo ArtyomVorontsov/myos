@@ -1,8 +1,8 @@
-#ifndef __MYOS__HARDWIRECOMMUNICATION__PCI_H
-#define __MYOS__HARDWIRECOMMUNICATION__PCI_H
+#ifndef __MYOS__HARDWARECOMMUNICATION__PCI_H
+#define __MYOS__HARDWARECOMMUNICATION__PCI_H
 
-#include <hardwirecommunication/port.hpp>
-#include <hardwirecommunication/bar.hpp>
+#include <hardwarecommunication/port.hpp>
+#include <hardwarecommunication/bar.hpp>
 #include <driver/driver.hpp>
 #include <driver/driver-manager.hpp>
 #include <types.h>

@@ -170,9 +170,9 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
         printfHex(interruptNumber);
     }
 
-    // Hardwire interrupt must be aknowledged in order to receive futher interrupts
-    bool isHardwireInterrupt = hardwareInterruptOffset <= interruptNumber && interruptNumber < hardwareInterruptOffset + 16;
-    if (isHardwireInterrupt)
+    // Hardware interrupt must be aknowledged in order to receive futher interrupts
+    bool isHardwareInterrupt = hardwareInterruptOffset <= interruptNumber && interruptNumber < hardwareInterruptOffset + 16;
+    if (isHardwareInterrupt)
     {
         // End of interrupt command code,
         // we need to send it in order to clear "in service" bit

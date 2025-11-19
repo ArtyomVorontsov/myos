@@ -1,1 +1,0 @@
-#include <hardwirecommunication/bar.hpp>

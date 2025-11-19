@@ -1,4 +1,4 @@
-#include <hardwirecommunication/port.hpp>
+#include <hardwarecommunication/port.hpp>
 
 Port::Port(uint16_t portnumber)
 {

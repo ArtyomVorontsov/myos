@@ -1,11 +1,11 @@
 
 
-#include <hardwirecommunication/port.hpp>
+#include <hardwarecommunication/port.hpp>
 #include <driver/driver.hpp>
 #include <driver/driver-manager.hpp>
 #include <types.h>
 #include <kernel/interrupts.hpp>
-#include <hardwirecommunication/pci.hpp>
+#include <hardwarecommunication/pci.hpp>
 #include <stdio.h>
 
 PeripheralComponentInterconnectDeviceDescriptor::PeripheralComponentInterconnectDeviceDescriptor()

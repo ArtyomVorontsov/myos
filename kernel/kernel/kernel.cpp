@@ -9,7 +9,7 @@
 #include <driver/driver-manager.hpp>
 #include <event-handler/print-keyboard-event-handler.hpp>
 #include <event-handler/print-mouse-event-handler.hpp>
-#include <hardwirecommunication/pci.hpp>
+#include <hardwarecommunication/pci.hpp>
 #include <gui/desktop.hpp>
 #include <gui/window.hpp>
 

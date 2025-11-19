@@ -2,7 +2,7 @@
 #define __MYOS_DRIVERS_VGA_H
 
 #include <types.h>
-#include <hardwirecommunication/port.hpp>
+#include <hardwarecommunication/port.hpp>
 #include <driver/driver.hpp>
 
 class VideoGrapicsArray
