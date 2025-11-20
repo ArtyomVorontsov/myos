@@ -1,5 +1,6 @@
 #include <kernel/interrupts.hpp>
 #include "stdio.h"
+#include <kernel/multitasking.hpp>
 
 InterruptHandler::InterruptHandler(InterruptManager *interruptManager, uint8_t InterruptNumber)
 {
@@ -34,13 +35,14 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interrupt].reserved = 0;
 }
 
-InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescriptorTable *globalDescriptorTable)
+InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescriptorTable *globalDescriptorTable, TaskManager *taskManager)
     : programmableInterruptControllerMasterCommandPort(0x20),
       programmableInterruptControllerMasterDataPort(0x21),
       programmableInterruptControllerSlaveCommandPort(0xA0),
       programmableInterruptControllerSlaveDataPort(0xA1)
 {
 
+    this->taskManager = taskManager;
     this->hardwareInterruptOffset = hardwareInterruptOffset;
     uint32_t CodeSegment = globalDescriptorTable->CodeSegmentSelector();
 
@@ -168,6 +170,11 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
     {
         printf("UNHANDLED INTERRUPT");
         printfHex(interruptNumber);
+    }
+
+    if (interruptNumber == hardwareInterruptOffset)
+    {
+        esp = (uint32_t)taskManager->schedule((CPUState *)esp);
     }
 
     // Hardware interrupt must be aknowledged in order to receive futher interrupts

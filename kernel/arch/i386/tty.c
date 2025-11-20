@@ -77,12 +77,8 @@ void terminal_putchar(char c)
         terminal_column = 0;
         if (++terminal_row == VGA_HEIGHT)
         {
-            for (line = 1; line <= VGA_HEIGHT - 1; line++)
-            {
-                // terminal_scroll(line);
-            }
-            terminal_delete_last_line();
-            terminal_row = VGA_HEIGHT - 1;
+            terminal_row = 0;
+            terminal_column = 0;
         }
     }
 }

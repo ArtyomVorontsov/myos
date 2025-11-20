@@ -5,10 +5,8 @@
 #include <string.h>
 #include "types.h"
 
-
 // Cursor variables
 static int x = 0;
-static int y = 0;
 
 static bool print(const char *data, size_t length)
 {
@@ -24,14 +22,14 @@ static bool print(const char *data, size_t length)
             for (int i = x; i < 80; i++)
             {
                 putchar(' ');
-                x++;
             }
+
+            x = 0;
         }
 
         if (x >= 80)
         {
             x = 0;
-            y++;
         }
 
         if (putchar(bytes[i]) == EOF)
@@ -94,6 +92,41 @@ size_t int16_to_str(int16_t value, char *buffer)
     return len;
 }
 
+char *uint32_to_str(uint32_t value, char *buffer)
+{
+    char *p = buffer;
+    char *p_start = buffer;
+
+    // Handle zero explicitly
+    if (value == 0)
+    {
+        *p++ = '0';
+        *p = '\0';
+        return buffer;
+    }
+
+    // Convert digits in reverse
+    while (value > 0)
+    {
+        uint32_t digit = value % 10;
+        *p++ = '0' + digit;
+        value /= 10;
+    }
+
+    // Null-terminate
+    *p = '\0';
+
+    // Reverse the string
+    for (char *a = p_start, *b = p - 1; a < b; a++, b--)
+    {
+        char tmp = *a;
+        *a = *b;
+        *b = tmp;
+    }
+
+    return buffer;
+}
+
 int printf(const char *__restrict__ format, ...)
 {
     va_list parameters;
@@ -103,7 +136,8 @@ int printf(const char *__restrict__ format, ...)
 
     while (*format != '\0')
     {
-        size_t maxrem = INT_MAX - written;
+        size_t intmaxrem = INT_MAX - written;
+        size_t uint32maxrem = ULONG_MAX - written;
 
         if (format[0] != '%' || format[1] == '%')
         {
@@ -112,7 +146,7 @@ int printf(const char *__restrict__ format, ...)
             size_t amount = 1;
             while (format[amount] && format[amount] != '%')
                 amount++;
-            if (maxrem < amount)
+            if (intmaxrem < amount)
             {
                 // TODO: Set errno to EOVERFLOW.
                 return -1;
@@ -130,7 +164,7 @@ int printf(const char *__restrict__ format, ...)
         {
             format++;
             char c = (char)va_arg(parameters, int /* char promotes to int */);
-            if (!maxrem)
+            if (!intmaxrem)
             {
                 // TODO: Set errno to EOVERFLOW.
                 return -1;
@@ -144,7 +178,7 @@ int printf(const char *__restrict__ format, ...)
             format++;
             const char *str = va_arg(parameters, const char *);
             size_t len = strlen(str);
-            if (maxrem < len)
+            if (intmaxrem < len)
             {
                 // TODO: Set errno to EOVERFLOW.
                 return -1;
@@ -157,7 +191,7 @@ int printf(const char *__restrict__ format, ...)
         {
             format++;
             int num = (int)va_arg(parameters, int /* char promotes to int */);
-            if (!maxrem)
+            if (!intmaxrem)
             {
                 // TODO: Set errno to EOVERFLOW.
                 return -1;
@@ -172,11 +206,30 @@ int printf(const char *__restrict__ format, ...)
                 return -1;
             written++;
         }
+        else if (*format == 'l')
+        {
+            format++;
+            int num = (int)va_arg(parameters, int /* char promotes to int */);
+            if (!uint32maxrem)
+            {
+                // TODO: Set errno to EOVERFLOW.
+                return -1;
+            }
+
+            char buf[33];
+            uint32_to_str(num, buf);
+            buf[32] = '\0';
+            size_t len = strlen(buf);
+
+            if (!print(buf, len))
+                return -1;
+            written++;
+        }
         else
         {
             format = format_begun_at;
             size_t len = strlen(format);
-            if (maxrem < len)
+            if (intmaxrem < len)
             {
                 // TODO: Set errno to EOVERFLOW.
                 return -1;

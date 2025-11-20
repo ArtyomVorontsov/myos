@@ -13,7 +13,33 @@
 #include <gui/desktop.hpp>
 #include <gui/window.hpp>
 
-#define GRAPHICS_MODE true;
+// #define GRAPHICS_MODE true;
+
+extern "C" void taskA()
+{
+	while (1)
+	{
+		printf("1111111");
+	}
+}
+
+extern "C" void taskB()
+{
+	while (1)
+		printf("2222222");
+}
+
+extern "C" void taskC()
+{
+	while (1)
+		printf("333333");
+}
+
+extern "C" void taskD()
+{
+	while (1)
+		printf("444444");
+}
 
 extern "C" void
 kernel_main(void)
@@ -22,7 +48,19 @@ kernel_main(void)
 	printf("Hello, MYOS C++ kernel\n");
 
 	GlobalDescriptorTable gdt;
-	InterruptManager interruptManager(0x20, &gdt);
+
+	TaskManager taskManager;
+
+	Task task1(&gdt, taskA);
+	Task task2(&gdt, taskB);
+	Task task3(&gdt, taskC);
+	Task task4(&gdt, taskD);
+	taskManager.addTask(&task1);
+	taskManager.addTask(&task2);
+	taskManager.addTask(&task3);
+	taskManager.addTask(&task4);
+
+	InterruptManager interruptManager(0x20, &gdt, &taskManager);
 
 	printf("Initializing Hardware, Stage 1\n");
 
