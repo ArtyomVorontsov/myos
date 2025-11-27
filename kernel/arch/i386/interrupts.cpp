@@ -1,6 +1,7 @@
 #include <kernel/interrupts.hpp>
-#include "stdio.h"
+#include <stdio.h>
 #include <kernel/multitasking.hpp>
+#include <types.h>
 
 InterruptHandler::InterruptHandler(InterruptManager *interruptManager, uint8_t InterruptNumber)
 {

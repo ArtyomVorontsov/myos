@@ -7,6 +7,7 @@
 #include <driver/driver-manager.hpp>
 #include <types.h>
 #include <kernel/interrupts.hpp>
+#include <kernel/memory-management.hpp>
 
 class PeripheralComponentInterconnectDeviceDescriptor
 {

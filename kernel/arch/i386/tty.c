@@ -1,7 +1,6 @@
 #include <stdbool.h>
-#include <stddef.h>
 #include <string.h>
-
+#include <types.h>
 #include <kernel/tty.h>
 
 #include "vga.h"

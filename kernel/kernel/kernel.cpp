@@ -12,6 +12,7 @@
 #include <hardwarecommunication/pci.hpp>
 #include <gui/desktop.hpp>
 #include <gui/window.hpp>
+#include <kernel/memory-management.hpp>
 
 // #define GRAPHICS_MODE true;
 
@@ -42,23 +43,47 @@ extern "C" void taskD()
 }
 
 extern "C" void
-kernel_main(void)
+kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 {
 	terminal_initialize();
 	printf("Hello, MYOS C++ kernel\n");
 
 	GlobalDescriptorTable gdt;
 
+	uint32_t *memupper = (uint32_t *)(((size_t)multiboot_structure) + 8);
+
+	size_t heap = 10 * 1024 * 1024; // 10mb
+
+	// TODO: rework this and get normal heap pointer instead of hardcoded one
+	uint32_t addressOfUpperMemoryInKb = (*memupper) * 1024;
+	MemoryManager memoryManager(heap, addressOfUpperMemoryInKb - heap - 10 * 1024);
+
+	printf("heap: 0x");
+	printfHex((heap >> 24) & 0xFF);
+	printfHex((heap >> 16) & 0xFF);
+	printfHex((heap >> 8) & 0xFF);
+	printfHex(heap & 0xFF);
+
+	void *allocated = memoryManager.malloc(1024);
+
+	printf("\nallocated 0x");
+	printfHex(((size_t)allocated >> 24) & 0xFF);
+	printfHex(((size_t)allocated >> 16) & 0xFF);
+	printfHex(((size_t)allocated >> 8) & 0xFF);
+	printfHex((size_t)allocated & 0xFF);
+
+	printf("\n");
+
 	TaskManager taskManager;
 
-	Task task1(&gdt, taskA);
-	Task task2(&gdt, taskB);
-	Task task3(&gdt, taskC);
-	Task task4(&gdt, taskD);
-	taskManager.addTask(&task1);
-	taskManager.addTask(&task2);
-	taskManager.addTask(&task3);
-	taskManager.addTask(&task4);
+	// Task task1(&gdt, taskA);
+	// Task task2(&gdt, taskB);
+	// Task task3(&gdt, taskC);
+	// Task task4(&gdt, taskD);
+	// taskManager.addTask(&task1);
+	// taskManager.addTask(&task2);
+	// taskManager.addTask(&task3);
+	// taskManager.addTask(&task4);
 
 	InterruptManager interruptManager(0x20, &gdt, &taskManager);
 

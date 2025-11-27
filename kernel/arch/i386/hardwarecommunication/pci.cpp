@@ -158,6 +158,9 @@ BaseAddressRegister PeripheralComponentInterconnectController::GetBaseAddressReg
 
 Driver *PeripheralComponentInterconnectController::GetDriver(PeripheralComponentInterconnectDeviceDescriptor dev, InterruptManager *interruptManager)
 {
+
+    Driver *driver = 0;
+
     switch (dev.vendor_id)
     {
     case 0x1022: // AMD
@@ -183,19 +186,19 @@ Driver *PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
             printf("Intel PCI & Memory, ");
             break;
 
-            case 0x7000:
+        case 0x7000:
             printf("Intel TBC, ");
             break;
 
-            case 0x7010:
+        case 0x7010:
             printf("Intel Ethernet/MAC, ");
             break;
 
-            case 0x7113:
+        case 0x7113:
             printf("Intel UNKNOWN DEVICE, ");
             break;
 
-            case 0x100E:
+        case 0x100E:
             printf("Intel Ethernet i217, ");
             break;
 
@@ -209,7 +212,7 @@ Driver *PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
         break;
     }
 
-    return 0;
+    return driver;
 }
 
 PeripheralComponentInterconnectDeviceDescriptor PeripheralComponentInterconnectController::GetDeviceDescriptor(

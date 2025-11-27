@@ -1,5 +1,6 @@
 #include <kernel/multitasking.hpp>
-#include "stdio.h"
+#include <stdio.h>
+#include <types.h>
 
 Task::Task(GlobalDescriptorTable *gdt, void entryPoint())
 {

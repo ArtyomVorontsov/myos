@@ -37,6 +37,8 @@ The project is fully functional up to a graphical desktop environment and has be
 - **GUI framework** with windows, cursor, and event handling  
 - **Desktop environment** supporting multiple draggable windows and text  
 - **Bootable disk image** compatible with **QEMU**, **VirtualBox**, and **VMware**  
+- **task scheduler** with simple context switching between processes  
+- **dynamic memory management** and **kernel heap allocator** (`malloc`/`free`)  
 
 ---
 
@@ -58,10 +60,6 @@ The project demonstrates the journey from bare-metal boot code to a simple deskt
 ---
 
 ## 🧱 TODO  
-
-### **Phase 6: Multitasking & Memory**
-- [ ] Implement **task scheduler** with context switching between processes  
-- [ ] Add **dynamic memory management** and **kernel heap allocator** (`malloc`/`free`)  
 
 ### **Phase 7: Networking**
 - [ ] Develop **basic networking stack** (Ethernet driver, frame transmission)  

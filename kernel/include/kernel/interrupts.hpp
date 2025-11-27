@@ -110,6 +110,7 @@ public:
         uint16_t hardwareInterruptOffset,
         GlobalDescriptorTable *globalDescriptorTable,
         TaskManager *taskManager);
+
     uint16_t HardwareInterruptOffset();
     void Activate();
     void Deactivate();
