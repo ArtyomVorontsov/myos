@@ -86,6 +86,8 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager *dri
                     }
                 }
 
+                // Print PCI device data
+
                 printf("PCI BUS ");
 
                 printfHex(bus & 0xFF);
@@ -111,6 +113,61 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager *dri
                 printfHex(dev.device_id & 0xFF);
 
                 printf("\n");
+
+                switch (dev.vendor_id)
+                {
+                case 0x1022: // AMD
+                    printf("Vendor: AMD, ");
+                    switch (dev.device_id)
+                    {
+                    case 0x2000: // am79c973
+                        printf("Device: AMD am79c973");
+                        break;
+
+                    default:
+                        break;
+                    }
+
+                    break;
+
+                case 0x8086: // Intel
+                    printf("Vendor: Intel, ");
+
+                    switch (dev.device_id)
+                    {
+                    case 0x1237:
+                        printf("Device: Intel PCI & Memory");
+                        break;
+
+                    case 0x7000:
+                        printf("Device: Intel TBC, ");
+                        break;
+
+                    case 0x7010:
+                        printf("Device: Intel Ethernet/MAC");
+                        break;
+
+                    case 0x7113:
+                        printf("Device: Intel UNKNOWN DEVICE");
+                        break;
+
+                    case 0x100E:
+                        printf("Device: Intel Ethernet i217");
+                        break;
+
+                    default:
+                        break;
+                    }
+
+                    break;
+
+                default:
+                    printf("Vendor: Unknown, Device: Unknown Device");
+
+                    break;
+                }
+
+                printf("\n\n");
             }
         }
     }
@@ -164,11 +221,11 @@ Driver *PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
     switch (dev.vendor_id)
     {
     case 0x1022: // AMD
-        printf("AMD Device, ");
+        // printf("AMD Device, ");
         switch (dev.device_id)
         {
         case 0x2000: // am79c973
-            printf("AMD am79c973, ");
+            // printf("AMD am79c973, ");
             break;
 
         default:
@@ -178,28 +235,28 @@ Driver *PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
         break;
 
     case 0x8086: // Intel
-        printf("Intel Device, ");
+        // printf("Intel Device, ");
 
         switch (dev.device_id)
         {
         case 0x1237:
-            printf("Intel PCI & Memory, ");
+            // printf("Intel PCI & Memory, ");
             break;
 
         case 0x7000:
-            printf("Intel TBC, ");
+            // printf("Intel TBC, ");
             break;
 
         case 0x7010:
-            printf("Intel Ethernet/MAC, ");
+            // printf("Intel Ethernet/MAC, ");
             break;
 
         case 0x7113:
-            printf("Intel UNKNOWN DEVICE, ");
+            // printf("Intel UNKNOWN DEVICE, ");
             break;
 
         case 0x100E:
-            printf("Intel Ethernet i217, ");
+            // printf("Intel Ethernet i217, ");
             break;
 
         default:
@@ -211,6 +268,8 @@ Driver *PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
     default:
         break;
     }
+
+    // printf("\n");
 
     return driver;
 }

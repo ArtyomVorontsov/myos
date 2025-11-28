@@ -58,21 +58,21 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	uint32_t addressOfUpperMemoryInKb = (*memupper) * 1024;
 	MemoryManager memoryManager(heap, addressOfUpperMemoryInKb - heap - 10 * 1024);
 
-	printf("heap: 0x");
-	printfHex((heap >> 24) & 0xFF);
-	printfHex((heap >> 16) & 0xFF);
-	printfHex((heap >> 8) & 0xFF);
-	printfHex(heap & 0xFF);
+	// printf("heap: 0x");
+	// printfHex((heap >> 24) & 0xFF);
+	// printfHex((heap >> 16) & 0xFF);
+	// printfHex((heap >> 8) & 0xFF);
+	// printfHex(heap & 0xFF);
 
-	void *allocated = memoryManager.malloc(1024);
+	// void *allocated = memoryManager.malloc(1024);
 
-	printf("\nallocated 0x");
-	printfHex(((size_t)allocated >> 24) & 0xFF);
-	printfHex(((size_t)allocated >> 16) & 0xFF);
-	printfHex(((size_t)allocated >> 8) & 0xFF);
-	printfHex((size_t)allocated & 0xFF);
+	// printf("\nallocated 0x");
+	// printfHex(((size_t)allocated >> 24) & 0xFF);
+	// printfHex(((size_t)allocated >> 16) & 0xFF);
+	// printfHex(((size_t)allocated >> 8) & 0xFF);
+	// printfHex((size_t)allocated & 0xFF);
 
-	printf("\n");
+	// printf("\n");
 
 	TaskManager taskManager;
 
