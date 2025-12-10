@@ -123,6 +123,7 @@ uint32_t amd_am79c973::HandleInterrupt(uint32_t esp)
     if ((temp & 0x0400) == 0x0400)
     {
         printf("AMD am79c973 DATA RECEIVED\n");
+        Receive();
     }
 
     if ((temp & 0x0200) == 0x0200)
@@ -141,4 +142,51 @@ uint32_t amd_am79c973::HandleInterrupt(uint32_t esp)
     }
 
     return esp;
+}
+
+void amd_am79c973::Send(uint8_t *buffer, int size)
+{
+    int sendDescriptor = currentSendBuffer;
+    currentSendBuffer = (currentSendBuffer + 1) % 8;
+
+    if (size > 1518)
+        size = 1518;
+
+    for (uint8_t *src = buffer + size - 1, *dst = (uint8_t *)(sendBufferDescr[sendDescriptor].address + size - 1);
+         src >= buffer;
+         src--, dst--)
+        *dst = *src;
+
+    sendBufferDescr[sendDescriptor].avail = 0;
+    sendBufferDescr[sendDescriptor].flags2 = 0;
+
+    sendBufferDescr[sendDescriptor].flags = 0x8300F00 | ((uint16_t)((-size) & 0xFFF));
+
+    registerAddressPort.Write(0);
+    registerDataPort.Write(0x48);
+}
+
+void amd_am79c973::Receive()
+{
+    for (; (recvBufferDescr[currentRecvBuffer].flags & 0x80000000) == 0; currentRecvBuffer = (currentRecvBuffer + 1) % 8)
+    {
+        if (!(recvBufferDescr[currentRecvBuffer].flags & 0x40000000) && (recvBufferDescr[currentRecvBuffer].flags & 0x03000000) == 0x03000000)
+        {
+            uint32_t size = recvBufferDescr[currentRecvBuffer].flags & 0xFFF;
+
+            // Remove checksum
+            if (size > 64)
+                size -= 4;
+
+            uint8_t *buffer = (uint8_t *)(recvBufferDescr[currentRecvBuffer].address);
+            for (int i = 0; i < size; i++)
+            {
+                printfHex(buffer[i]);
+                printf(" ");
+            }
+        }
+
+        recvBufferDescr[currentRecvBuffer].flags2 = 0;
+        recvBufferDescr[currentRecvBuffer].flags = 0x8000F7FF;
+    }
 }

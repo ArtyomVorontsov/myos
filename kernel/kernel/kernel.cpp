@@ -13,6 +13,7 @@
 #include <gui/desktop.hpp>
 #include <gui/window.hpp>
 #include <kernel/memory-management.hpp>
+#include <driver/amd_am79c973.hpp>
 
 // #define GRAPHICS_MODE true;
 
@@ -130,6 +131,9 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
 	desktop.AddChild(&win2);
 #endif
+
+	amd_am79c973 *eth0 = (amd_am79c973 *)(driverManager.drivers[2]);
+	eth0->Send((uint8_t *)"Hello network", 13);
 
 	interruptManager.Activate();
 

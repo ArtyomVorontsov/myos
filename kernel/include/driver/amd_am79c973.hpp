@@ -59,6 +59,8 @@ public:
     void Activate();
     int Reset();
     uint32_t HandleInterrupt(uint32_t esp);
+    void Send(uint8_t *buffer, int count);
+    void Receive();
 };
 
 #endif
