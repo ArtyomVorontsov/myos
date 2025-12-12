@@ -14,6 +14,7 @@
 #include <gui/window.hpp>
 #include <kernel/memory-management.hpp>
 #include <driver/amd_am79c973.hpp>
+#include <driver/ata.hpp>
 
 // #define GRAPHICS_MODE true;
 
@@ -132,8 +133,30 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	desktop.AddChild(&win2);
 #endif
 
-	amd_am79c973 *eth0 = (amd_am79c973 *)(driverManager.drivers[2]);
-	eth0->Send((uint8_t *)"Hello network", 13);
+	printf("\nS-ATA primary master\n");
+	AdvancedTechnologyAttachment ata0m(true, 0x1F0);
+	ata0m.Identify();
+
+	printf("\nS-ATA primary slave\n");
+	AdvancedTechnologyAttachment ata0s(false, 0x1F0);
+	ata0s.Identify();
+	ata0s.Write28(0, (uint8_t *)"hello", 6);
+	ata0s.Flush();
+	ata0s.Read28(0);
+
+	// printf("\nS-ATA secondary master");
+	// AdvancedTechnologyAttachment ata1m(true, 0x170);
+	// ata1m.Identify();
+
+	// printf("\nS-ATA secondary slave");
+	// AdvancedTechnologyAttachment ata1s(false, 0x170);
+	// ata1s.Identify();
+
+	// Third: 0x1E8
+	// Fourth: 0x168
+
+	// amd_am79c973 *eth0 = (amd_am79c973 *)(driverManager.drivers[2]);
+	// eth0->Send((uint8_t *)"Hello network", 13);
 
 	interruptManager.Activate();
 
