@@ -15,6 +15,12 @@
 #include <kernel/memory-management.hpp>
 #include <driver/amd_am79c973.hpp>
 #include <driver/ata.hpp>
+#include <kernel/syscalls.hpp>
+
+void sysprintf(char *str)
+{
+	asm("int $0x80" : : "a"(4), "b"(str));
+}
 
 // #define GRAPHICS_MODE true;
 
@@ -22,26 +28,26 @@ extern "C" void taskA()
 {
 	while (1)
 	{
-		printf("1111111");
+		sysprintf("1111111");
 	}
 }
 
 extern "C" void taskB()
 {
 	while (1)
-		printf("2222222");
+		sysprintf("2222222");
 }
 
 extern "C" void taskC()
 {
 	while (1)
-		printf("333333");
+		sysprintf("333333");
 }
 
 extern "C" void taskD()
 {
 	while (1)
-		printf("444444");
+		sysprintf("444444");
 }
 
 extern "C" void
@@ -78,16 +84,17 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 
 	TaskManager taskManager;
 
-	// Task task1(&gdt, taskA);
-	// Task task2(&gdt, taskB);
-	// Task task3(&gdt, taskC);
-	// Task task4(&gdt, taskD);
-	// taskManager.addTask(&task1);
-	// taskManager.addTask(&task2);
-	// taskManager.addTask(&task3);
-	// taskManager.addTask(&task4);
+	Task task1(&gdt, taskA);
+	Task task2(&gdt, taskB);
+	Task task3(&gdt, taskC);
+	Task task4(&gdt, taskD);
+	taskManager.addTask(&task1);
+	taskManager.addTask(&task2);
+	taskManager.addTask(&task3);
+	taskManager.addTask(&task4);
 
 	InterruptManager interruptManager(0x20, &gdt, &taskManager);
+	SyscallHandler syscalls(&interruptManager, 0x80);
 
 	printf("Initializing Hardware, Stage 1\n");
 
@@ -117,7 +124,10 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	PeripheralComponentInterconnectController PCIController;
 	PCIController.SelectDrivers(&driverManager, &interruptManager);
 
-	VideoGrapicsArray vga;
+// VideoGrapicsArray vga;
+#ifdef GRAPHICSMODE
+	VideoGraphicsArray vga;
+#endif
 
 	printf("Initializing Hardware, Stage 2\n");
 	driverManager.ActivateAll();
@@ -133,16 +143,16 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	desktop.AddChild(&win2);
 #endif
 
-	printf("\nS-ATA primary master\n");
-	AdvancedTechnologyAttachment ata0m(true, 0x1F0);
-	ata0m.Identify();
+	// printf("\nS-ATA primary master\n");
+	// AdvancedTechnologyAttachment ata0m(true, 0x1F0);
+	// ata0m.Identify();
 
-	printf("\nS-ATA primary slave\n");
-	AdvancedTechnologyAttachment ata0s(false, 0x1F0);
-	ata0s.Identify();
-	ata0s.Write28(0, (uint8_t *)"hello", 6);
-	ata0s.Flush();
-	ata0s.Read28(0);
+	// printf("\nS-ATA primary slave\n");
+	// AdvancedTechnologyAttachment ata0s(false, 0x1F0);
+	// ata0s.Identify();
+	// ata0s.Write28(0, (uint8_t *)"hello", 6);
+	// ata0s.Flush();
+	// ata0s.Read28(0);
 
 	// printf("\nS-ATA secondary master");
 	// AdvancedTechnologyAttachment ata1m(true, 0x170);
