@@ -60,7 +60,7 @@ void AdvancedTechnologyAttachment::Identify()
     printf("\n");
 }
 
-void AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, int count)
+void AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, uint8_t *data, int count)
 {
     if (sectorNum > 0x0FFFFFFF)
         return;
@@ -98,15 +98,19 @@ void AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, int count)
     {
         uint16_t wdata = dataPort.Read();
 
-        char text[4] = "  \0";
-        text[0] = wdata & 0xFF;
+        // char text[4] = "  \0";
+        // text[0] = wdata & 0xFF;
 
+        // if (i + 1 < count)
+        //     text[1] = (wdata >> 8) & 0xFF;
+        // else
+        //     text[1] = '\0';
+
+        // printf(text);
+
+        data[i] = wdata & 0x00FF;
         if (i + 1 < count)
-            text[1] = (wdata >> 8) & 0xFF;
-        else
-            text[1] = '\0';
-
-        printf(text);
+            data[i + 1] = (wdata >> 8) & 0x00FF;
     }
 
     for (int i = count + (count % 2); i < 512; i += 2)

@@ -16,6 +16,7 @@
 #include <driver/amd_am79c973.hpp>
 #include <driver/ata.hpp>
 #include <kernel/syscalls.hpp>
+#include <filesystem/msdospart.hpp>
 
 void sysprintf(char *str)
 {
@@ -84,14 +85,14 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 
 	TaskManager taskManager;
 
-	Task task1(&gdt, taskA);
-	Task task2(&gdt, taskB);
-	Task task3(&gdt, taskC);
-	Task task4(&gdt, taskD);
-	taskManager.addTask(&task1);
-	taskManager.addTask(&task2);
-	taskManager.addTask(&task3);
-	taskManager.addTask(&task4);
+	// Task task1(&gdt, taskA);
+	// Task task2(&gdt, taskB);
+	// Task task3(&gdt, taskC);
+	// Task task4(&gdt, taskD);
+	// taskManager.addTask(&task1);
+	// taskManager.addTask(&task2);
+	// taskManager.addTask(&task3);
+	// taskManager.addTask(&task4);
 
 	InterruptManager interruptManager(0x20, &gdt, &taskManager);
 	SyscallHandler syscalls(&interruptManager, 0x80);
@@ -143,13 +144,15 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	desktop.AddChild(&win2);
 #endif
 
-	// printf("\nS-ATA primary master\n");
-	// AdvancedTechnologyAttachment ata0m(true, 0x1F0);
-	// ata0m.Identify();
+	printf("\nS-ATA primary master\n");
+	AdvancedTechnologyAttachment ata0m(true, 0x1F0);
+	ata0m.Identify();
 
-	// printf("\nS-ATA primary slave\n");
-	// AdvancedTechnologyAttachment ata0s(false, 0x1F0);
-	// ata0s.Identify();
+	printf("\nS-ATA primary slave\n");
+	AdvancedTechnologyAttachment ata0s(false, 0x1F0);
+	ata0s.Identify();
+
+	 MSDOSPartitionTable::ReadPartitions(&ata0m);
 	// ata0s.Write28(0, (uint8_t *)"hello", 6);
 	// ata0s.Flush();
 	// ata0s.Read28(0);
