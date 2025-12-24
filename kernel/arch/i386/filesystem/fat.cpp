@@ -68,6 +68,7 @@ void ReadBiosBlock(AdvancedTechnologyAttachment *hd, uint32_t partitionOffset)
 
         int32_t SIZE = dirent[i].size;
         int32_t nextFileCluster = firstFileCluster;
+        int32_t amountOfClustersRead = 0;
         uint8_t buffer[513];
         uint8_t fatBuffer[513];
 
@@ -76,6 +77,7 @@ void ReadBiosBlock(AdvancedTechnologyAttachment *hd, uint32_t partitionOffset)
             uint32_t fileSector = dataStart + bpb.sectorPerCluster * (nextFileCluster - 2);
             int sectorOffset = 0;
 
+            amountOfClustersRead++;
             for (; SIZE > 0; SIZE -= 512)
             {
                 hd->Read28(fileSector + sectorOffset, buffer, 512);
@@ -94,5 +96,8 @@ void ReadBiosBlock(AdvancedTechnologyAttachment *hd, uint32_t partitionOffset)
             uint32_t fatOffsetInSectorForCurrentCluster = nextFileCluster % (512 / sizeof(uint32_t));
             nextFileCluster = ((uint32_t *)&fatBuffer)[fatOffsetInSectorForCurrentCluster] & 0x0FFFFFFF;
         }
+
+        printf("\n");
+        printf("Amount of clusters was read: %d\n", amountOfClustersRead);
     }
 }
