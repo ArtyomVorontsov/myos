@@ -18,12 +18,14 @@
 #include <kernel/syscalls.hpp>
 #include <filesystem/msdospart.hpp>
 
+// #define GRAPHICS_MODE true;
+// LOG CONFIG
+// #define LOG_SYSTEM_STATUS true
+
 void sysprintf(char *str)
 {
 	asm("int $0x80" : : "a"(4), "b"(str));
 }
-
-// #define GRAPHICS_MODE true;
 
 extern "C" void taskA()
 {
@@ -97,8 +99,9 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	InterruptManager interruptManager(0x20, &gdt, &taskManager);
 	SyscallHandler syscalls(&interruptManager, 0x80);
 
+	#ifdef LOG_SYSTEM_STATUS
 	printf("Initializing Hardware, Stage 1\n");
-
+	#endif
 #ifdef GRAPHICS_MODE
 	Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
 #endif
@@ -130,11 +133,14 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	VideoGraphicsArray vga;
 #endif
 
+	#ifdef LOG_SYSTEM_STATUS
 	printf("Initializing Hardware, Stage 2\n");
+	#endif
 	driverManager.ActivateAll();
 
+	#ifdef LOG_SYSTEM_STATUS
 	printf("Initializing Hardware, Stage 3\n");
-
+	#endif
 #ifdef GRAPHICS_MODE
 	vga.SetMode(320, 200, 8);
 
@@ -144,15 +150,15 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	desktop.AddChild(&win2);
 #endif
 
-	printf("\nS-ATA primary master\n");
+	printf("S-ATA primary master\n");
 	AdvancedTechnologyAttachment ata0m(true, 0x1F0);
 	ata0m.Identify();
 
-	printf("\nS-ATA primary slave\n");
+	printf("S-ATA primary slave\n");
 	AdvancedTechnologyAttachment ata0s(false, 0x1F0);
 	ata0s.Identify();
 
-	 MSDOSPartitionTable::ReadPartitions(&ata0m);
+	MSDOSPartitionTable::ReadPartitions(&ata0m);
 	// ata0s.Write28(0, (uint8_t *)"hello", 6);
 	// ata0s.Flush();
 	// ata0s.Read28(0);

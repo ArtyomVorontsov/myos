@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <driver/amd_am79c973.hpp>
 
+// LOG CONFIG
+// #define LOG_PCI true
+
 PeripheralComponentInterconnectDeviceDescriptor::PeripheralComponentInterconnectDeviceDescriptor()
 {
 }
@@ -88,6 +91,8 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager *dri
                 }
 
                 // Print PCI device data
+
+                #ifdef LOG_PCI
 
                 printf("PCI BUS ");
 
@@ -169,6 +174,8 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager *dri
                 }
 
                 printf("\n\n");
+
+                #endif
             }
         }
     }

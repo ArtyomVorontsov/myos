@@ -5,7 +5,7 @@
 void MSDOSPartitionTable::ReadPartitions(AdvancedTechnologyAttachment *hd)
 {
     MasterBootRecord mbr;
-    printf("MBR: ");
+    printf("MBR: \n");
 
     hd->Read28(0, (uint8_t *)&mbr, sizeof(MasterBootRecord));
 
@@ -22,13 +22,12 @@ void MSDOSPartitionTable::ReadPartitions(AdvancedTechnologyAttachment *hd)
         return;
     }
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 2; i++)
     {
-        printf(" PartitionID ");
+        printf("PartitionID ");
         if (mbr.primaryPartition[i].partition_id == 0x80)
             continue;
 
-        printf(" Partition ");
         printfHex(i & 0xFF);
 
         if (mbr.primaryPartition[i].bootable == 0x80)
@@ -38,6 +37,7 @@ void MSDOSPartitionTable::ReadPartitions(AdvancedTechnologyAttachment *hd)
 
         printfHex(mbr.primaryPartition[i].partition_id);
 
+        printf("\n");
         ReadBiosBlock(hd, mbr.primaryPartition[i].start_lba);
     }
 }

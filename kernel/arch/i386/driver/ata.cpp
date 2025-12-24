@@ -1,6 +1,9 @@
 #include <driver/ata.hpp>
 #include <stdio.h>
 
+// LOG CONFIG
+// #define LOG_ATA true
+
 AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool master, uint16_t portBase)
     : dataPort(portBase),
       errorPort(portBase + 0x1),
@@ -54,10 +57,14 @@ void AdvancedTechnologyAttachment::Identify()
         text[0] = (data >> 8) & 0xFF;
         text[1] = data & 0xFF;
 
+#ifdef LOG_ATA
         printf(text);
+#endif
     }
 
+#ifdef LOG_ATA
     printf("\n");
+#endif
 }
 
 void AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, uint8_t *data, int count)
@@ -92,7 +99,9 @@ void AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, uint8_t *data, int
         return;
     }
 
+#ifdef LOG_ATA
     printf("Reading ATA Drive: ");
+#endif
 
     for (int i = 0; i < count; i += 2)
     {
@@ -118,7 +127,9 @@ void AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, uint8_t *data, int
         dataPort.Read();
     }
 
+#ifdef LOG_ATA
     printf("\n");
+#endif LOG_ATA
 }
 
 void AdvancedTechnologyAttachment::Write28(uint32_t sectorNum, uint8_t *data, uint32_t count)
@@ -145,8 +156,9 @@ void AdvancedTechnologyAttachment::Write28(uint32_t sectorNum, uint8_t *data, ui
     // Write command
     commandPort.Write(0x30);
 
+#ifdef LOG_ATA
     printf("Writing to ATA drive: ");
-
+#endif
     for (int i = 0; i < count; i += 2)
     {
 
@@ -160,7 +172,10 @@ void AdvancedTechnologyAttachment::Write28(uint32_t sectorNum, uint8_t *data, ui
         char text[4] = "  \0";
         text[1] = (wdata >> 8) & 0xFF;
         text[0] = wdata & 0xFF;
+
+#ifdef LOG_ATA
         printf(text);
+#endif
     }
 
     // If we write less than full size of the sector - we write zeroes to the rest of the sector
@@ -171,7 +186,9 @@ void AdvancedTechnologyAttachment::Write28(uint32_t sectorNum, uint8_t *data, ui
         dataPort.Write(0x0000);
     }
 
+#ifdef LOG_ATA
     printf("\n");
+#endif
 }
 
 void AdvancedTechnologyAttachment::Flush()
