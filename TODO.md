@@ -30,3 +30,55 @@
 # read https://wiki.osdev.org/GUI
 # rewatch intro https://www.youtube.com/watch?v=3fTVUqILuYw&list=PLHh55M_Kq4OApWScZyPl5HhgsTJS9MZ6M&index=14
 # add frame buffering to fix flickering https://github.com/sloganking/My-Own-OS/commit/dbc336ff3052cb482f4e6372afe66290df0007e0
+
+# 24 dec
+# Extend file system
+
+# class FS
+# getDirectoryTraversal
+# FAT file system
+# newFATDirectoryTraversal
+
+# class DirTraversal 
+# DirTraversal <- abstract class
+# GetFileEnumerator 
+# CreateDir
+# ChangeDir
+# RemoveDir
+# GetClusterNumber
+
+# FATDirTraversal <- derived from abstract class
+# NewFATFileEnumeator <- derived from GetFileEnumerator 
+# CreateDir
+# ChangeDir
+# RemoveDir
+# GetClusterNumber
+
+# File Enumerator
+# GetName
+# GetReader
+# GetWriter
+# GetSize 
+# Next
+
+# FAT File Enumerator
+# Get Name <- derived from GetName 
+# Next <- derived from Next
+
+
+# File Reader
+# Close
+# Read
+
+# FAT File Reader
+# Close 
+# Read 
+
+
+# File Writer
+# Close 
+# Write
+
+# FAT File Writer  
+# Close
+# Write  
