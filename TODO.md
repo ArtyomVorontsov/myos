@@ -82,3 +82,14 @@
 # FAT File Writer  
 # Close
 # Write  
+
+# Plan for 25 Dec 
+# * create VFS system and FAT32 File system derived from that
+# * create basic shell which will allow to traverse file system 
+#   - support for command parsing is needed
+#   - support for shell variables is needed
+#   - support for shell config is needed
+#   - support for PATH variable is needed
+#   - support for running external commands (such as ls, cd and etc is needed)
+
+# * Need to think how to handle processes in OS
