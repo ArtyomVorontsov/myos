@@ -49,7 +49,7 @@ struct DirectoryEntryFat32
     uint16_t firstClusterHi;
     uint16_t wTime;
     uint16_t wDate;
-    uint16_t fiestClusterLow;
+    uint16_t firstClusterLow;
     uint32_t size;
 
 } __attribute__((packed));

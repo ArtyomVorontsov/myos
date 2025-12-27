@@ -17,6 +17,7 @@
 #include <driver/ata.hpp>
 #include <kernel/syscalls.hpp>
 #include <filesystem/msdospart.hpp>
+#include <filesystem/fat-vfs.hpp>
 
 // #define GRAPHICS_MODE true;
 // LOG CONFIG
@@ -158,7 +159,12 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	AdvancedTechnologyAttachment ata0s(false, 0x1F0);
 	ata0s.Identify();
 
-	MSDOSPartitionTable::ReadPartitions(&ata0m);
+	FATVFS fatvfs(&ata0m);
+	// fatvfs.printPartitionInfo();
+
+	
+
+	// MSDOSPartitionTable::ReadPartitions(&ata0m);
 	// ata0s.Write28(0, (uint8_t *)"hello", 6);
 	// ata0s.Flush();
 	// ata0s.Read28(0);

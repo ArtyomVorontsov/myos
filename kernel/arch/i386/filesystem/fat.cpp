@@ -64,7 +64,7 @@ void ReadBiosBlock(AdvancedTechnologyAttachment *hd, uint32_t partitionOffset)
         printf("File content: ");
 
         uint32_t firstFileCluster = ((uint32_t)dirent[i].firstClusterHi) << 16 |
-                                    ((uint32_t)dirent[i].fiestClusterLow);
+                                    ((uint32_t)dirent[i].firstClusterLow);
 
         int32_t SIZE = dirent[i].size;
         int32_t nextFileCluster = firstFileCluster;
