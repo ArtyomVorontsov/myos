@@ -22,8 +22,10 @@ public:
     void printFileInfo(DirectoryEntryFat32 *directoryEntry, uint8_t level);
     void traverseDirectories(
         AdvancedTechnologyAttachment *hd,
-        uint32_t directoryStartInSectors,
-        uint32_t fatDataStartInSectors,
+        uint32_t startInSectorsFAT,
+        uint32_t startInSectorsDATA,
+        uint32_t directoryClusterNumberFAT,
+        uint32_t directoryStartInSectorsDATA,
         uint8_t sectorsPerCluster,
         uint8_t level);
     FATDirectoryTraversal directoryTraversal;

@@ -36,8 +36,6 @@ FATVFS::FATVFS(AdvancedTechnologyAttachment *hd)
         this->partitionInfo[i].partitionId = mbr.primaryPartition[i].partition_id;
         this->partitionInfo[i].bootable = mbr.primaryPartition[i].bootable == 0x80;
         this->partitionInfo[i].partitionOffset = mbr.primaryPartition[i].start_lba;
-
-        // ReadBiosBlock(hd, mbr.primaryPartition[i].start_lba);
     }
 
     // Do directory traversal
@@ -58,25 +56,87 @@ FATVFS::FATVFS(AdvancedTechnologyAttachment *hd)
     // Get File Allocation Table size in sectors
     uint32_t fatTableSizeInSectors = biosParameterBlock.tableSize;
 
-    uint32_t fatDataStartInSectors = fatTableStartInSectors + fatTableSizeInSectors * biosParameterBlock.fatCopies;
+    uint32_t startInSectorsDATA = fatTableStartInSectors + fatTableSizeInSectors * biosParameterBlock.fatCopies;
 
-    uint32_t rootDirectoryStartInSectors = fatDataStartInSectors + biosParameterBlock.sectorPerCluster * (biosParameterBlock.rootCluster - 2);
+    uint32_t directoryStartInSectorsDATA = startInSectorsDATA + biosParameterBlock.sectorPerCluster * (biosParameterBlock.rootCluster - 2);
 
-    traverseDirectories(hd, rootDirectoryStartInSectors, fatDataStartInSectors, sectorsPerCluster, 0);
+    traverseDirectories(hd, fatTableStartInSectors, directoryStartInSectorsDATA, biosParameterBlock.rootCluster, startInSectorsDATA, sectorsPerCluster, 0);
 }
 
-void FATVFS::traverseDirectories(AdvancedTechnologyAttachment *hd, uint32_t directoryStartInSectors, uint32_t fatDataStartInSectors, uint8_t sectorsPerCluster, uint8_t level)
+void FATVFS::traverseDirectories(
+    AdvancedTechnologyAttachment *hd,
+    uint32_t startInSectorsFAT,
+    uint32_t startInSectorsDATA,
+    uint32_t directoryClusterNumberInDataRegion,
+    uint32_t directoryStartInSectorsDATA,
+    uint8_t sectorsPerCluster,
+    uint8_t level)
 {
+    // TODO: change hardcoded values to dynamic ones
+    uint32_t CLUSTER_SIZE_IN_BYTES = 4096;
+    uint32_t SECTOR_SIZE_IN_BYTES = 512;
+    uint8_t NUMBER_OF_DIRECTORY_ENTRIES_PER_SECTOR = SECTOR_SIZE_IN_BYTES / sizeof(DirectoryEntryFat32);
+    uint32_t CLUSTER_SIZE_IN_DATA_ENTRIES = CLUSTER_SIZE_IN_BYTES / sizeof(DirectoryEntryFat32);
+    uint32_t END_OF_CLUSTER_CHAIN = 0x0FFFFFF8;
+
+    // Buffer to store directory entries
+    DirectoryEntryFat32 directoryEntries[CLUSTER_SIZE_IN_DATA_ENTRIES * 2];
+    uint32_t nextFileClusterNumber = 0;
+    uint32_t currentFileClusterNumber = directoryClusterNumberInDataRegion;
+    uint8_t bufferFAT[513];
+    uint32_t clusterAmountRead = 0;
+
+    // File system level
     ++level;
-    uint8_t CLUSTER_SIZE_IN_FAT_ENTRIES = 16;
 
-    DirectoryEntryFat32 directoryEntries[CLUSTER_SIZE_IN_FAT_ENTRIES];
+    // -2 is because first 2 clusters are not used in FAT, but in data they are... so cluster number 2 in FAT is 0 in DATA
+    directoryStartInSectorsDATA = startInSectorsDATA + sectorsPerCluster * (directoryClusterNumberInDataRegion - 2);
 
-    hd->Read28(directoryStartInSectors, (uint8_t *)&directoryEntries[0], sizeof(DirectoryEntryFat32) * CLUSTER_SIZE_IN_FAT_ENTRIES);
-
-    for (int i = 0; i < CLUSTER_SIZE_IN_FAT_ENTRIES; i++)
+    // Read cluster chain
+    while (true)
     {
+        clusterAmountRead++;
+        // Read whole cluster
+        for (int j = 0; j < sectorsPerCluster; j++)
+        {
+            // Read whole sector
+            hd->Read28(
+                directoryStartInSectorsDATA + j,
+                (uint8_t *)&directoryEntries[j * NUMBER_OF_DIRECTORY_ENTRIES_PER_SECTOR],
+                sizeof(DirectoryEntryFat32) * NUMBER_OF_DIRECTORY_ENTRIES_PER_SECTOR);
+        }
 
+        // Get next cluster
+
+        // Get FAT sector number where current file cluster is mentioned 
+        uint32_t sectorForCurrentClusterInFAT = currentFileClusterNumber / (SECTOR_SIZE_IN_BYTES / sizeof(uint32_t));
+
+        // Get FAT sector offset where current file cluster is mentioned 
+        uint32_t offsetInSectorForCurrentClusterInFAT = currentFileClusterNumber % (SECTOR_SIZE_IN_BYTES / sizeof(uint32_t));
+
+        // Read FAT sector where current cluster number is mentioned
+        hd->Read28(startInSectorsFAT + sectorForCurrentClusterInFAT, bufferFAT, SECTOR_SIZE_IN_BYTES);
+
+        // Get next cluster number from FAT buffer
+        // We need to mask that because only 28 bits are used for cluster numbers
+        nextFileClusterNumber = ((uint32_t *)&bufferFAT)[offsetInSectorForCurrentClusterInFAT] & 0x0FFFFFFF;
+
+        if (nextFileClusterNumber >= END_OF_CLUSTER_CHAIN)
+        {
+            // last cluster
+            break;
+        }
+
+        // In next iteration nextFileClusterNumber is current one 
+        currentFileClusterNumber = nextFileClusterNumber;
+
+        // Calculate new file start in sectors 
+        // -2 is because first 2 clusters are not used in FAT, but in data they are... so cluster number 2 in FAT is 0 in DATA
+        directoryStartInSectorsDATA = startInSectorsDATA + sectorsPerCluster * (nextFileClusterNumber - 2);
+    }
+
+    for (int i = 0; i < CLUSTER_SIZE_IN_DATA_ENTRIES * clusterAmountRead; i++)
+    {
         uint8_t attr = directoryEntries[i].attributes;
 
         bool isLFN = (attr == ATTR_LFN);
@@ -113,13 +173,17 @@ void FATVFS::traverseDirectories(AdvancedTechnologyAttachment *hd, uint32_t dire
             this->printDirectoryInfo(&(directoryEntries[i]), level);
 
             // Get file content
-            uint32_t firstFileCluster = ((uint32_t)directoryEntries[i].firstClusterHi) << 16 |
-                                        ((uint32_t)directoryEntries[i].firstClusterLow);
+            uint32_t directoryClusterNumberInDataRegion = ((uint32_t)directoryEntries[i].firstClusterHi) << 16 |
+                                                     ((uint32_t)directoryEntries[i].firstClusterLow);
 
-            int32_t nextFileCluster = firstFileCluster;
-            uint32_t fileSector = fatDataStartInSectors + sectorsPerCluster * (nextFileCluster - 2);
-
-            this->traverseDirectories(hd, fileSector, fatDataStartInSectors, sectorsPerCluster, level);
+            this->traverseDirectories(
+                hd,
+                startInSectorsFAT,
+                startInSectorsDATA,
+                directoryClusterNumberInDataRegion,
+                directoryStartInSectorsDATA,
+                sectorsPerCluster,
+                level);
         }
     }
 }
