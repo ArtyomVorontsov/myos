@@ -1,5 +1,6 @@
 #include <filesystem/fat-vfs.hpp>
 #include <filesystem/msdospart.hpp>
+#include <kernel/memory-management.hpp>
 #include <stdio.h>
 
 #define ATTR_READ_ONLY 0x01
@@ -80,7 +81,7 @@ void FATVFS::traverseDirectories(
     uint32_t END_OF_CLUSTER_CHAIN = 0x0FFFFFF8;
 
     // Buffer to store directory entries
-    DirectoryEntryFat32 directoryEntries[CLUSTER_SIZE_IN_DATA_ENTRIES * 2];
+    DirectoryEntryFat32 directoryEntries[CLUSTER_SIZE_IN_DATA_ENTRIES * 2]; // TODO: fix 2 clusters limitation
     uint32_t nextFileClusterNumber = 0;
     uint32_t currentFileClusterNumber = directoryClusterNumberInDataRegion;
     uint8_t bufferFAT[513];
@@ -92,6 +93,24 @@ void FATVFS::traverseDirectories(
     // -2 is because first 2 clusters are not used in FAT, but in data they are... so cluster number 2 in FAT is 0 in DATA
     directoryStartInSectorsDATA = startInSectorsDATA + sectorsPerCluster * (directoryClusterNumberInDataRegion - 2);
 
+    DirectoryEntryFat32 *rootDirectoryEntry = (DirectoryEntryFat32 *)MemoryManager::activeMemoryManager->malloc(sizeof(DirectoryEntryFat32));
+
+    rootDirectoryEntry->name[0] = 'r';
+    rootDirectoryEntry->name[1] = 'o';
+    rootDirectoryEntry->name[2] = 'o';
+    rootDirectoryEntry->name[3] = 't';
+
+    directoryTraversal = (FATFileEnumerator *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileEnumerator));
+
+    new (directoryTraversal) FATFileEnumerator(
+        startInSectorsFAT,
+        startInSectorsDATA,
+        currentFileClusterNumber,
+        sectorsPerCluster,
+        *rootDirectoryEntry);
+
+    FATFileEnumerator *currentDirectoryTraversal = directoryTraversal;
+
     // Read cluster chain
     while (true)
     {
@@ -99,19 +118,20 @@ void FATVFS::traverseDirectories(
         // Read whole cluster
         for (int j = 0; j < sectorsPerCluster; j++)
         {
+            uint32_t bufferOffset = ((clusterAmountRead - 1) * NUMBER_OF_DIRECTORY_ENTRIES_PER_SECTOR * sectorsPerCluster);
             // Read whole sector
             hd->Read28(
                 directoryStartInSectorsDATA + j,
-                (uint8_t *)&directoryEntries[j * NUMBER_OF_DIRECTORY_ENTRIES_PER_SECTOR],
+                (uint8_t *)&directoryEntries[j * NUMBER_OF_DIRECTORY_ENTRIES_PER_SECTOR + bufferOffset],
                 sizeof(DirectoryEntryFat32) * NUMBER_OF_DIRECTORY_ENTRIES_PER_SECTOR);
         }
 
         // Get next cluster
 
-        // Get FAT sector number where current file cluster is mentioned 
+        // Get FAT sector number where current file cluster is mentioned
         uint32_t sectorForCurrentClusterInFAT = currentFileClusterNumber / (SECTOR_SIZE_IN_BYTES / sizeof(uint32_t));
 
-        // Get FAT sector offset where current file cluster is mentioned 
+        // Get FAT sector offset where current file cluster is mentioned
         uint32_t offsetInSectorForCurrentClusterInFAT = currentFileClusterNumber % (SECTOR_SIZE_IN_BYTES / sizeof(uint32_t));
 
         // Read FAT sector where current cluster number is mentioned
@@ -127,14 +147,18 @@ void FATVFS::traverseDirectories(
             break;
         }
 
-        // In next iteration nextFileClusterNumber is current one 
+        // In next iteration nextFileClusterNumber is current one
         currentFileClusterNumber = nextFileClusterNumber;
 
-        // Calculate new file start in sectors 
+        // Calculate new file start in sectors
         // -2 is because first 2 clusters are not used in FAT, but in data they are... so cluster number 2 in FAT is 0 in DATA
         directoryStartInSectorsDATA = startInSectorsDATA + sectorsPerCluster * (nextFileClusterNumber - 2);
     }
 
+    uint32_t fileEnumeratorEntriesAmount = 0;
+    FATFileEnumerator *fileEnumeratorEntries = (FATFileEnumerator *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileEnumerator) * CLUSTER_SIZE_IN_DATA_ENTRIES * 2);
+
+    // CLUSTER_SIZE_IN_DATA_ENTRIES * clusterAmountRead
     for (int i = 0; i < CLUSTER_SIZE_IN_DATA_ENTRIES * clusterAmountRead; i++)
     {
         uint8_t attr = directoryEntries[i].attributes;
@@ -149,7 +173,14 @@ void FATVFS::traverseDirectories(
         if (directoryEntries[i].name[0] == 0x00)
         {
             // No more files
+            printf("No more files\n");
             break;
+        }
+
+        if (directoryEntries[i].name[0] == 0xE5)
+        {
+            // deleted entry, skip
+            continue;;
         }
 
         if (directoryEntries[i].name[0] == '.')
@@ -166,25 +197,60 @@ void FATVFS::traverseDirectories(
         }
 
         if (isFile)
-            this->printFileInfo(&(directoryEntries[i]), level);
+        {
+            // this->printFileInfo(&(directoryEntries[i]), level);
+        }
 
         if (isDirectory)
         {
+
+            DirectoryEntryFat32 *directoryEntry = (DirectoryEntryFat32 *)MemoryManager::activeMemoryManager->malloc(sizeof(DirectoryEntryFat32));
+            *directoryEntry = directoryEntries[i];
+
+            new (fileEnumeratorEntries + fileEnumeratorEntriesAmount) FATFileEnumerator(
+                startInSectorsFAT,
+                startInSectorsDATA,
+                currentFileClusterNumber,
+                sectorsPerCluster,
+                *directoryEntry);
+
             this->printDirectoryInfo(&(directoryEntries[i]), level);
 
             // Get file content
             uint32_t directoryClusterNumberInDataRegion = ((uint32_t)directoryEntries[i].firstClusterHi) << 16 |
-                                                     ((uint32_t)directoryEntries[i].firstClusterLow);
+                                                          ((uint32_t)directoryEntries[i].firstClusterLow);
 
-            this->traverseDirectories(
-                hd,
-                startInSectorsFAT,
-                startInSectorsDATA,
-                directoryClusterNumberInDataRegion,
-                directoryStartInSectorsDATA,
-                sectorsPerCluster,
-                level);
+            printf("fileEnumeratorEntriesAmount %d\n", fileEnumeratorEntriesAmount);
+            // this->traverseDirectories(
+            //     hd,
+            //     startInSectorsFAT,
+            //     startInSectorsDATA,
+            //     directoryClusterNumberInDataRegion,
+            //     directoryStartInSectorsDATA,
+            //     sectorsPerCluster,
+            //     level);
+
+            fileEnumeratorEntriesAmount++;
         }
+    }
+
+    printf("fileEnumeratorEntriesAmount %d\n", fileEnumeratorEntriesAmount);
+    directoryTraversal->childrenAmount = fileEnumeratorEntriesAmount;
+    directoryTraversal->children = fileEnumeratorEntries;
+}
+
+void FATVFS::printDirectoryTraversal()
+{
+    printf("printDirectoryTraversal %d\n", directoryTraversal->childrenAmount);
+    for (uint32_t i = 0; i < directoryTraversal->childrenAmount; i++)
+    {
+        char *fname = "        ";
+        for (int j = 0; j < 8; j++)
+        {
+            fname[j] = directoryTraversal->children[i].directoryEntry.name[j];
+        }
+        printf(fname);
+        printf("\n");
     }
 }
 

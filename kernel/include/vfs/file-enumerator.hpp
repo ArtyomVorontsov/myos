@@ -8,10 +8,10 @@
 class FileEnumerator
 {
 public:
-    virtual char *GetName();
+    virtual uint8_t *GetName();
     virtual FileReader *GetReader();
     virtual FileWriter *GetWriter();
-    virtual int GetSize();
+    virtual uint32_t GetSize();
     virtual FileEnumerator *Next();
     virtual uint8_t getType(); // 0 - file, 1 - dir
 };

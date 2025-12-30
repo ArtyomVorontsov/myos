@@ -5,16 +5,33 @@
 #include <filesystem/fat-file-reader.hpp>
 #include <filesystem/fat-file-writer.hpp>
 #include <types.h>
+#include <filesystem/fat.hpp>
 
 class FATFileEnumerator : public FileEnumerator
 {
 public:
-    char *GetName();
-    FATFileReader *GetReader();
-    FATFileWriter *GetWriter();
-    int GetSize();
-    FATFileEnumerator *Next();
+    FATFileEnumerator(uint32_t startInSectorsFAT,
+                      uint32_t startInSectorsDATA,
+                      uint32_t fileClusterNumber,
+                      uint32_t sectorsPerCluster,
+                      DirectoryEntryFat32 directoryEntry);
+    uint8_t *GetName();
+    FileReader *GetReader();
+    FileWriter *GetWriter();
+    uint32_t GetSize();
+    FileEnumerator *Next();
     uint8_t getType(); // 0 - file, 1 - dir
+    DirectoryEntryFat32 directoryEntry;
+    uint8_t *data;               // pointer to file data
+    FATFileEnumerator *children; // if directory there will be list of children
+    uint32_t childrenAmount;
+
+private:
+    uint32_t startInSectorsFAT;
+    uint32_t startInSectorsDATA;
+    uint32_t clusterNumberFAT;
+    uint32_t clusterNumberOffsetFAT;
+    uint32_t fileClusterNumber;
 };
 
 #endif

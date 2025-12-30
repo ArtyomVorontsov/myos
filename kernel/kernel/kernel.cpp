@@ -160,6 +160,7 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	ata0s.Identify();
 
 	FATVFS fatvfs(&ata0m);
+	fatvfs.printDirectoryTraversal();
 	// fatvfs.printPartitionInfo();
 
 	

@@ -4,6 +4,7 @@
 #include <filesystem/fat-directory-traversal.hpp>
 #include <vfs/vfs.hpp>
 #include <filesystem/fat.hpp>
+#include <filesystem/fat-file-enumerator.hpp>
 
 struct PartitionInfo
 {
@@ -20,6 +21,7 @@ public:
     void printPartitionInfo();
     void printDirectoryInfo(DirectoryEntryFat32 *directoryEntry, uint8_t level);
     void printFileInfo(DirectoryEntryFat32 *directoryEntry, uint8_t level);
+    void printDirectoryTraversal();
     void traverseDirectories(
         AdvancedTechnologyAttachment *hd,
         uint32_t startInSectorsFAT,
@@ -28,7 +30,7 @@ public:
         uint32_t directoryStartInSectorsDATA,
         uint8_t sectorsPerCluster,
         uint8_t level);
-    FATDirectoryTraversal directoryTraversal;
+    FATFileEnumerator *directoryTraversal;
     uint8_t partitionAmount;
     PartitionInfo partitionInfo[4];
 };
