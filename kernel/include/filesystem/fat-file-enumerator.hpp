@@ -10,11 +10,7 @@
 class FATFileEnumerator : public FileEnumerator
 {
 public:
-    FATFileEnumerator(uint32_t startInSectorsFAT,
-                      uint32_t startInSectorsDATA,
-                      uint32_t fileClusterNumber,
-                      uint32_t sectorsPerCluster,
-                      DirectoryEntryFat32 directoryEntry);
+    FATFileEnumerator(DirectoryEntryFat32 directoryEntry);
     uint8_t *GetName();
     FileReader *GetReader();
     FileWriter *GetWriter();
@@ -31,7 +27,7 @@ private:
     uint32_t startInSectorsDATA;
     uint32_t clusterNumberFAT;
     uint32_t clusterNumberOffsetFAT;
-    uint32_t fileClusterNumber;
+    uint32_t fileClusterNumberInDataRegion;
 };
 
 #endif

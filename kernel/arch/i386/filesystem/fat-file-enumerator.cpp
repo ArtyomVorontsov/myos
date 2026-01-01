@@ -9,11 +9,7 @@
 #define ATTR_ARCHIVE 0x20
 #define ATTR_LFN 0x0F
 
-FATFileEnumerator::FATFileEnumerator(uint32_t startInSectorsFAT,
-                                     uint32_t startInSectorsDATA,
-                                     uint32_t fileClusterNumber,
-                                     uint32_t sectorsPerCluster,
-                                     DirectoryEntryFat32 directoryEntry)
+FATFileEnumerator::FATFileEnumerator(DirectoryEntryFat32 directoryEntry)
 {
     this->directoryEntry = directoryEntry;
 }

@@ -22,17 +22,18 @@ public:
     void printDirectoryInfo(DirectoryEntryFat32 *directoryEntry, uint8_t level);
     void printFileInfo(DirectoryEntryFat32 *directoryEntry, uint8_t level);
     void printDirectoryTraversal();
-    void traverseDirectories(
-        AdvancedTechnologyAttachment *hd,
-        uint32_t startInSectorsFAT,
-        uint32_t startInSectorsDATA,
-        uint32_t directoryClusterNumberFAT,
-        uint32_t directoryStartInSectorsDATA,
-        uint8_t sectorsPerCluster,
+    void printDirectoryTraversalRecursive(FATFileEnumerator *parentDir, uint32_t level);
+    FATFileEnumerator *traverseDirectories(
+        FATFileEnumerator *rootFileEnumerator,
         uint8_t level);
     FATFileEnumerator *directoryTraversal;
     uint8_t partitionAmount;
     PartitionInfo partitionInfo[4];
+
+    AdvancedTechnologyAttachment *hd;
+    uint32_t startInSectorsFAT;
+    uint32_t startInSectorsDATA;
+    uint8_t sectorPerCluster;
 };
 
 #endif
