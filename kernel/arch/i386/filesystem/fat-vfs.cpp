@@ -2,6 +2,7 @@
 #include <filesystem/msdospart.hpp>
 #include <kernel/memory-management.hpp>
 #include <filesystem/fat-file-reader.hpp>
+#include <filesystem/fat-file-writer.hpp>
 #include <stdio.h>
 
 #define ATTR_READ_ONLY 0x01
@@ -80,7 +81,9 @@ FATVFS::FATVFS(AdvancedTechnologyAttachment *hd)
     FATFileEnumerator *rootFileEnumerator = (FATFileEnumerator *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileEnumerator));
 
     FATFileReader *fileReader = (FATFileReader *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileReader));
-    new (rootFileEnumerator) FATFileEnumerator(*rootDirectoryEntry, fileReader);
+    FATFileWriter *fileWriter = (FATFileWriter *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileWriter));
+
+    new (rootFileEnumerator) FATFileEnumerator(*rootDirectoryEntry, fileReader, fileWriter);
 
     this->directoryTraversal = traverseDirectories(
         rootFileEnumerator,
@@ -204,8 +207,11 @@ FATFileEnumerator *FATVFS::traverseDirectories(
             FATFileReader *fileReader = (FATFileReader *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileReader));
             new (fileReader) FATFileReader(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
 
+            FATFileWriter *fileWriter = (FATFileWriter *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileWriter));
+            new (fileWriter) FATFileWriter(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
+
             FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
-            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader);
+            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter);
 
             fileEnumeratorEntriesAmount++;
         }
@@ -218,8 +224,12 @@ FATFileEnumerator *FATVFS::traverseDirectories(
             FATFileReader *fileReader = (FATFileReader *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileReader));
             new (fileReader) FATFileReader(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
 
+            FATFileWriter *fileWriter = (FATFileWriter *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileWriter));
+            new (fileWriter) FATFileWriter(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
+
             FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
-            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader);
+            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter);
+
 
             this->traverseDirectories(fileEnumeratorPtr, level);
 

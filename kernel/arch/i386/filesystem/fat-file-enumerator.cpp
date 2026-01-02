@@ -9,10 +9,11 @@
 #define ATTR_ARCHIVE 0x20
 #define ATTR_LFN 0x0F
 
-FATFileEnumerator::FATFileEnumerator(DirectoryEntryFat32 directoryEntry, FATFileReader *fileReader)
+FATFileEnumerator::FATFileEnumerator(DirectoryEntryFat32 directoryEntry, FATFileReader *fileReader, FATFileWriter *fileWriter)
 {
     this->directoryEntry = directoryEntry;
     this->fileReader = fileReader;
+    this->fileWriter = fileWriter;
 }
 
 uint8_t *FATFileEnumerator::GetName()
@@ -29,6 +30,7 @@ FileReader *FATFileEnumerator::GetReader()
 
 FileWriter *FATFileEnumerator::GetWriter()
 {
+    return this->fileWriter;
 }
 
 uint32_t FATFileEnumerator::GetSize()
