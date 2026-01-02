@@ -4,7 +4,7 @@
 class FileReader
 {
 public:
-    virtual char *read();
+    virtual void read();
 };
 
 #endif

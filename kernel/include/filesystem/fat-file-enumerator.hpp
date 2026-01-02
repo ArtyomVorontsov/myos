@@ -2,18 +2,18 @@
 #define __MY_OS__VFS_FAT_FILE_ENUMERATOR_H
 
 #include <vfs/file-enumerator.hpp>
-#include <filesystem/fat-file-reader.hpp>
 #include <filesystem/fat-file-writer.hpp>
+#include <filesystem/fat-file-reader.hpp>
 #include <types.h>
 #include <filesystem/fat.hpp>
 
 class FATFileEnumerator : public FileEnumerator
 {
 public:
-    FATFileEnumerator(DirectoryEntryFat32 directoryEntry);
+    FATFileEnumerator(DirectoryEntryFat32 directoryEntry, FATFileReader *fileReader);
     uint8_t *GetName();
-    FileReader *GetReader();
     FileWriter *GetWriter();
+    FileReader *GetReader();
     uint32_t GetSize();
     FileEnumerator *Next();
     uint8_t getType(); // 0 - file, 1 - dir
@@ -28,6 +28,7 @@ private:
     uint32_t clusterNumberFAT;
     uint32_t clusterNumberOffsetFAT;
     uint32_t fileClusterNumberInDataRegion;
+    FATFileReader *fileReader;
 };
 
 #endif

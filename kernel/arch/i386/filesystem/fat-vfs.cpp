@@ -1,6 +1,7 @@
 #include <filesystem/fat-vfs.hpp>
 #include <filesystem/msdospart.hpp>
 #include <kernel/memory-management.hpp>
+#include <filesystem/fat-file-reader.hpp>
 #include <stdio.h>
 
 #define ATTR_READ_ONLY 0x01
@@ -78,7 +79,8 @@ FATVFS::FATVFS(AdvancedTechnologyAttachment *hd)
 
     FATFileEnumerator *rootFileEnumerator = (FATFileEnumerator *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileEnumerator));
 
-    new (rootFileEnumerator) FATFileEnumerator(*rootDirectoryEntry);
+    FATFileReader *fileReader = (FATFileReader *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileReader));
+    new (rootFileEnumerator) FATFileEnumerator(*rootDirectoryEntry, fileReader);
 
     this->directoryTraversal = traverseDirectories(
         rootFileEnumerator,
@@ -196,18 +198,28 @@ FATFileEnumerator *FATVFS::traverseDirectories(
 
         if (isFile)
         {
-            // this->printFileInfo(&(directoryEntries[i]), level);
+            DirectoryEntryFat32 *directoryEntry = (DirectoryEntryFat32 *)MemoryManager::activeMemoryManager->malloc(sizeof(DirectoryEntryFat32));
+            *directoryEntry = directoryEntries[i];
+
+            FATFileReader *fileReader = (FATFileReader *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileReader));
+            new (fileReader) FATFileReader(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
+
+            FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
+            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader);
+
+            fileEnumeratorEntriesAmount++;
         }
 
         if (isDirectory)
         {
-
             DirectoryEntryFat32 *directoryEntry = (DirectoryEntryFat32 *)MemoryManager::activeMemoryManager->malloc(sizeof(DirectoryEntryFat32));
             *directoryEntry = directoryEntries[i];
 
-            FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
+            FATFileReader *fileReader = (FATFileReader *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileReader));
+            new (fileReader) FATFileReader(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
 
-            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry);
+            FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
+            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader);
 
             this->traverseDirectories(fileEnumeratorPtr, level);
 
