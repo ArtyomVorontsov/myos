@@ -5,7 +5,7 @@
 class FileWriter
 {    
 public:
-    void virtual write(uint8_t *data);
+    void virtual write(uint8_t *data, uint32_t dataSize);
 };
 
 #endif

@@ -163,8 +163,7 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	fatvfs.printDirectoryTraversal();
 
 	fatvfs.directoryTraversal->children[0].GetReader()->read();
-	fatvfs.directoryTraversal->children[0].GetWriter()->write((uint8_t *)"hello 1\n");
-	fatvfs.directoryTraversal->children[0].GetReader()->read();
+	fatvfs.directoryTraversal->children[0].GetWriter()->write((uint8_t *)"hello 1\n", 8);
 	fatvfs.directoryTraversal->children[0].GetReader()->read();
 
 	

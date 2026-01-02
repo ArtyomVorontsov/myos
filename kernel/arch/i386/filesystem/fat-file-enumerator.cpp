@@ -18,9 +18,7 @@ FATFileEnumerator::FATFileEnumerator(DirectoryEntryFat32 directoryEntry, FATFile
 
 uint8_t *FATFileEnumerator::GetName()
 {
-    uint8_t *name = this->directoryEntry.name;
-
-    return name;
+    return this->directoryEntry.name;
 }
 
 FileReader *FATFileEnumerator::GetReader()

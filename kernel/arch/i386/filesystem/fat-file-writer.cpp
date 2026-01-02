@@ -10,7 +10,7 @@ FATFileWriter::FATFileWriter(AdvancedTechnologyAttachment *hd, DirectoryEntryFat
     this->hd = hd;
 }
 
-void FATFileWriter::write(uint8_t *data)
+void FATFileWriter::write(uint8_t *data, uint32_t dataSize = 512)
 {
     int32_t SIZE = directoryEntry->size;
 
@@ -20,6 +20,19 @@ void FATFileWriter::write(uint8_t *data)
     uint8_t FATBuffer[513];
     uint8_t fileBuffer[513];
 
+    // Clear file buffer
+    for (int i = 0; i < 513; i++)
+    {
+        fileBuffer[i] = '\0';
+    }
+
+    // Populate file buffer with data
+    for (int i = 0; i < dataSize; i++)
+    {
+        fileBuffer[i] = data[i];
+    }
+    
+
     while (SIZE > 0)
     {
         uint32_t currentClusterAddressDATA = startInSectorsDATA + sectorPerCluster * (currentClusterNumber - 2);
@@ -27,10 +40,10 @@ void FATFileWriter::write(uint8_t *data)
 
         for (int i = 0; SIZE > 0; SIZE -= 512, i++)
         {
-            hd->Write28(currentClusterAddressDATA + sectorOffset, data, 512);
+            hd->Write28(currentClusterAddressDATA + sectorOffset, fileBuffer, 512);
+            hd->Flush();
 
             fileBuffer[SIZE > 512 ? 512 : SIZE] = '\0';
-            printf((char *)fileBuffer);
 
             if (++sectorOffset > sectorPerCluster)
             {

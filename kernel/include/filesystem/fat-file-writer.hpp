@@ -9,7 +9,7 @@ class FATFileWriter : public FileWriter
 
 public:
     FATFileWriter(AdvancedTechnologyAttachment *hd, DirectoryEntryFat32 *directoryEntry, uint32_t startInSectorsDATA, uint32_t sectorPerCluster);
-    void write(uint8_t *data);
+    void write(uint8_t *data, uint32_t dataSize);
     DirectoryEntryFat32 *directoryEntry;
     uint32_t startInSectorsDATA;
     uint32_t sectorPerCluster;
