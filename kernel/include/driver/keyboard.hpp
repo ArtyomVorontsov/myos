@@ -7,7 +7,6 @@
 #include <driver/driver.hpp>
 #include <event-handler/keyboard-event-handler.hpp>
 
-
 class KeyboardDriver : public InterruptHandler,
                        public Driver
 {
@@ -15,11 +14,20 @@ class KeyboardDriver : public InterruptHandler,
     Port8Bit commandport;
 
     KeyboardEventHandler *handler;
+    char buffer[128];
+    uint32_t bufferCurrentIndex;
+    uint32_t bufferStartIndex;
+    uint32_t bufferEndIndex;
+    int8_t bufferPendingAmount;
+    void bufferPush(char c);
 
 public:
     KeyboardDriver(InterruptManager *manager, KeyboardEventHandler *handler);
     virtual uint32_t HandleInterrupt(uint32_t esp);
     virtual void Activate();
+    char bufferPop();
+    char getLastBufferChar();
+    uint8_t getBufferPendingAmount();
 };
 
 #endif

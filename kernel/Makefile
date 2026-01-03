@@ -20,9 +20,11 @@ LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
 ARCHDIR=arch/$(HOSTARCH)
 GUIDIR=gui
+SOFTWAREDIR=software
 
 include $(ARCHDIR)/make.config
 include $(GUIDIR)/make.config
+include $(SOFTWAREDIR)/make.config
 
 CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
 CPPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
@@ -32,6 +34,7 @@ LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 $(KERNEL_GUI_OBJS) \
+$(KERNEL_SOFTWARE_OBJS) \
 kernel/kernel.o \
 
 OBJS=\

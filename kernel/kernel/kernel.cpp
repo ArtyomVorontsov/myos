@@ -18,6 +18,7 @@
 #include <kernel/syscalls.hpp>
 #include <filesystem/msdospart.hpp>
 #include <filesystem/fat-vfs.hpp>
+#include <software/shell/shell.hpp>
 
 // #define GRAPHICS_MODE true;
 // LOG CONFIG
@@ -100,9 +101,9 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	InterruptManager interruptManager(0x20, &gdt, &taskManager);
 	SyscallHandler syscalls(&interruptManager, 0x80);
 
-	#ifdef LOG_SYSTEM_STATUS
+#ifdef LOG_SYSTEM_STATUS
 	printf("Initializing Hardware, Stage 1\n");
-	#endif
+#endif
 #ifdef GRAPHICS_MODE
 	Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
 #endif
@@ -134,14 +135,14 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	VideoGraphicsArray vga;
 #endif
 
-	#ifdef LOG_SYSTEM_STATUS
+#ifdef LOG_SYSTEM_STATUS
 	printf("Initializing Hardware, Stage 2\n");
-	#endif
+#endif
 	driverManager.ActivateAll();
 
-	#ifdef LOG_SYSTEM_STATUS
+#ifdef LOG_SYSTEM_STATUS
 	printf("Initializing Hardware, Stage 3\n");
-	#endif
+#endif
 #ifdef GRAPHICS_MODE
 	vga.SetMode(320, 200, 8);
 
@@ -160,13 +161,13 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 	ata0s.Identify();
 
 	FATVFS fatvfs(&ata0m);
-	fatvfs.printDirectoryTraversal();
+	// fatvfs.printDirectoryTraversal();
 
-	fatvfs.directoryTraversal->children[0].GetReader()->read();
-	fatvfs.directoryTraversal->children[0].GetWriter()->write((uint8_t *)"hello 1\n", 8);
-	fatvfs.directoryTraversal->children[0].GetReader()->read();
+	// fatvfs.directoryTraversal->children[0].GetReader()->read();
+	// fatvfs.directoryTraversal->children[0].GetWriter()->write((uint8_t *)"hello 1\n", 8);
+	// fatvfs.directoryTraversal->children[0].GetReader()->read();
 
-	
+	Shell shell(&keyboardDriver, &fatvfs);
 
 	// MSDOSPartitionTable::ReadPartitions(&ata0m);
 	// ata0s.Write28(0, (uint8_t *)"hello", 6);
@@ -191,6 +192,10 @@ kernel_main(const void *multiboot_structure, uint32_t /*multiboot_magic*/)
 
 	while (1)
 	{
+#ifndef GRAPHICS_MODE
+		shell.run();
+#endif
+
 #ifdef GRAPHICS_MODE
 		desktop.Draw(&vga);
 		vga.RenderScreen();

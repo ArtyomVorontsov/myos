@@ -16,17 +16,6 @@ static bool print(const char *data, size_t length)
         // TODO: Improve cursor handling
         x++;
 
-        if (bytes[i] == '\n')
-        {
-
-            for (int i = x; i < 80; i++)
-            {
-                putchar(' ');
-            }
-
-            x = 0;
-        }
-
         if (x >= 80)
         {
             x = 0;
