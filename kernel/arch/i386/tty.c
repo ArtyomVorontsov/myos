@@ -14,6 +14,11 @@ static size_t terminal_column;
 static uint8_t terminal_color;
 static uint16_t *terminal_buffer;
 
+static inline void outb(uint16_t port, uint8_t val)
+{
+    __asm__ volatile("outb %0, %1" : : "a"(val), "Nd"(port));
+}
+
 void terminal_initialize(void)
 {
     terminal_row = 0;
@@ -39,6 +44,17 @@ void terminal_putentryat(unsigned char c, uint8_t color, size_t x, size_t y)
 {
     const size_t index = y * VGA_WIDTH + x;
     terminal_buffer[index] = vga_entry(c, color);
+}
+
+void terminal_update_hw_cursor(void)
+{
+    uint16_t pos = terminal_row * VGA_WIDTH + terminal_column;
+
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, (uint8_t)(pos & 0xFF));
+
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
 }
 
 // TODO: fix
@@ -95,6 +111,8 @@ void terminal_putchar(char c)
             terminal_column = 0;
         }
     }
+
+    terminal_update_hw_cursor();
 }
 
 void terminal_write(const char *data, size_t size)
