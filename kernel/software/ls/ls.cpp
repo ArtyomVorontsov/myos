@@ -14,6 +14,4 @@ void Ls::run(char *args)
     {
         printf("%d - %s\n", currentDirectory->children[i].inode, currentDirectory->children[i].GetName());
     }
-
-    printf("\n");
 }

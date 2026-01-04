@@ -23,6 +23,4 @@ void Cd::run(char *args)
     }
 
     this->fatvfs->setCurrentDirectory(args);
-
-    printf("\n");
 }

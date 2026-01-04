@@ -17,7 +17,6 @@
 FATVFS::FATVFS(AdvancedTechnologyAttachment *hd)
 {
     MasterBootRecord mbr;
-    printf("MBR: \n");
 
     this->hd = hd;
     hd->Read28(0, (uint8_t *)&mbr, sizeof(MasterBootRecord));

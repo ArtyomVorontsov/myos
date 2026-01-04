@@ -28,5 +28,4 @@ void Write::run(char *arg1, char *arg2)
 
     // TODO: fix hardcoded value length to write
     fileWriter->write((uint8_t *)arg2, 20);
-    printf("\n");
 }
