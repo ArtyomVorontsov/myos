@@ -16,7 +16,6 @@
 
 FATVFS::FATVFS(AdvancedTechnologyAttachment *hd)
 {
-
     MasterBootRecord mbr;
     printf("MBR: \n");
 
@@ -84,7 +83,7 @@ FATVFS::FATVFS(AdvancedTechnologyAttachment *hd)
     FATFileReader *fileReader = (FATFileReader *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileReader));
     FATFileWriter *fileWriter = (FATFileWriter *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileWriter));
 
-    new (rootFileEnumerator) FATFileEnumerator(*rootDirectoryEntry, fileReader, fileWriter, NULL);
+    new (rootFileEnumerator) FATFileEnumerator(*rootDirectoryEntry, fileReader, fileWriter, NULL, 2);
 
     this->currentDirectory = rootFileEnumerator;
 
@@ -170,6 +169,10 @@ FATFileEnumerator *FATVFS::traverseDirectories(
     {
         uint8_t attr = directoryEntries[i].attributes;
 
+        uint32_t inode = ((rootFileEnumerator->directoryEntry.firstClusterHi >> 16) |
+                          rootFileEnumerator->directoryEntry.firstClusterLow) +
+                         i;
+
         bool isLFN = (attr == ATTR_LFN);
         bool isDirectory = (attr & ATTR_DIRECTORY);
         bool isVolume = (attr & ATTR_VOLUME_ID);
@@ -214,7 +217,7 @@ FATFileEnumerator *FATVFS::traverseDirectories(
             new (fileWriter) FATFileWriter(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
 
             FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
-            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter, rootFileEnumerator);
+            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter, rootFileEnumerator, inode);
 
             fileEnumeratorEntriesAmount++;
         }
@@ -231,7 +234,7 @@ FATFileEnumerator *FATVFS::traverseDirectories(
             new (fileWriter) FATFileWriter(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
 
             FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
-            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter, rootFileEnumerator);
+            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter, rootFileEnumerator, inode);
 
             this->traverseDirectories(fileEnumeratorPtr, level);
 

@@ -12,7 +12,7 @@ void Ls::run(char *args)
 
     for (int i = 0; i < currentDirectory->childrenAmount; i++)
     {
-        printf("%s\n", currentDirectory->children[i].directoryEntry.name);
+        printf("%d - %s\n", currentDirectory->children[i].inode, currentDirectory->children[i].GetName());
     }
 
     printf("\n");

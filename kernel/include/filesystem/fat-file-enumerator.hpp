@@ -10,7 +10,12 @@
 class FATFileEnumerator : public FileEnumerator
 {
 public:
-    FATFileEnumerator(DirectoryEntryFat32 directoryEntry, FATFileReader *fileReader, FATFileWriter *fileWriter, FATFileEnumerator *parent);
+    FATFileEnumerator(
+        DirectoryEntryFat32 directoryEntry,
+        FATFileReader *fileReader,
+        FATFileWriter *fileWriter,
+        FATFileEnumerator *parent,
+        uint32_t inode);
     uint8_t *GetName();
     FATFileWriter *GetWriter();
     FATFileReader *GetReader();
@@ -22,6 +27,7 @@ public:
     uint8_t *data;               // pointer to file data
     FATFileEnumerator *children; // if directory there will be list of children
     uint32_t childrenAmount;
+    uint32_t inode;
 
 private:
     uint32_t startInSectorsFAT;
