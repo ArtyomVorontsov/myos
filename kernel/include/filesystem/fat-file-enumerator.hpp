@@ -10,13 +10,14 @@
 class FATFileEnumerator : public FileEnumerator
 {
 public:
-    FATFileEnumerator(DirectoryEntryFat32 directoryEntry, FATFileReader *fileReader, FATFileWriter *fileWriter);
+    FATFileEnumerator(DirectoryEntryFat32 directoryEntry, FATFileReader *fileReader, FATFileWriter *fileWriter, FATFileEnumerator *parent);
     uint8_t *GetName();
-    FileWriter *GetWriter();
-    FileReader *GetReader();
+    FATFileWriter *GetWriter();
+    FATFileReader *GetReader();
     uint32_t GetSize();
     FileEnumerator *Next();
     uint8_t getType(); // 0 - file, 1 - dir
+    FATFileEnumerator *getParent();
     DirectoryEntryFat32 directoryEntry;
     uint8_t *data;               // pointer to file data
     FATFileEnumerator *children; // if directory there will be list of children
@@ -30,6 +31,7 @@ private:
     uint32_t fileClusterNumberInDataRegion;
     FATFileReader *fileReader;
     FATFileWriter *fileWriter;
+    FATFileEnumerator *parent; // if directory there will be parent directory
 };
 
 #endif

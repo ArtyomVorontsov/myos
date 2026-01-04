@@ -1,4 +1,8 @@
 #include <software/shell/shell.hpp>
+#include <software/cat/cat.hpp>
+#include <software/cd/cd.hpp>
+#include <software/ls/ls.hpp>
+#include <software/write/write.hpp>
 #include <stdio.h>
 #include <string.h>
 
@@ -56,36 +60,88 @@ void Shell::run()
                 i++;
             }
 
-            printf("Command: ");
             for (int i = 0; i < this->shellTextBufferPointer; i++)
             {
                 this->shellTextBuffer[i] = this->shellTextBufferReverse[(this->shellTextBufferPointer - 1) - i];
-
             }
             this->shellTextBuffer[this->shellTextBufferPointer] = '\0';
-            printf("%s", this->shellTextBuffer);
-            printf("\n");
+
+            // parse command and argument
+            // TODO: implement normal parsing, probably as scripting language
+            char command[10] = {0};
+            char argument1[10] = {0};
+            char argument2[20] = {0};
+
+            bool cmdWasProcessed = false;
+            bool argument1WasProcessed = false;
+            for (int j = 0, i = 0; i < this->shellTextBufferPointer; i++)
+            {
+
+                if (argument1WasProcessed)
+                {
+                    argument2[j] = this->shellTextBuffer[i];
+                    j++;
+                }
+                else if (cmdWasProcessed)
+                {
+                    if (this->shellTextBuffer[i] != ' ')
+                    {
+                        argument1[j] = this->shellTextBuffer[i];
+                        j++;
+                    }
+                }
+                else
+                {
+                    if (this->shellTextBuffer[i] != ' ')
+                    {
+                        command[j] = this->shellTextBuffer[i];
+                        j++;
+                    }
+                }
+
+                if (this->shellTextBuffer[i] == ' ' && cmdWasProcessed)
+                {
+                    argument1WasProcessed = true;
+                    j = 0;
+                }
+
+                if (this->shellTextBuffer[i] == ' ')
+                {
+                    cmdWasProcessed = true;
+                    j = 0;
+                }
+            }
 
             this->shellTextBufferPointer = 0;
 
-
             // Execute command
 
-            // add strcmp for correct comparison
-            if(memcmp("ls", shellTextBuffer, 2) == 0){
-                printf("Execute ls\n");
+            if (strcmp("ls", command) == 0)
+            {
+                Ls ls(fatvfs);
+
+                ls.run(argument1);
             }
 
-            if(memcmp("cat", shellTextBuffer, 2) == 0){
-                printf("Execute cat\n");
+            if (strcmp("cat", command) == 0)
+            {
+                Cat cat(fatvfs);
+
+                cat.run(argument1);
             }
 
-            if(memcmp("cd", shellTextBuffer, 2) == 0){
-                printf("Execute cd\n");
+            if (strcmp("cd", command) == 0)
+            {
+                Cd cd(fatvfs);
+
+                cd.run(argument1);
             }
 
-            if(memcmp("write", shellTextBuffer, 2) == 0){
-                printf("Execute write\n");
+            if (strcmp("write", command) == 0)
+            {
+                Write write(fatvfs);
+
+                write.run(argument1, argument2);
             }
         }
     }

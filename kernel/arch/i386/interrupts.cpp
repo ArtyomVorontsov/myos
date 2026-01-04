@@ -170,6 +170,9 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
     {
         esp = handlers[interruptNumber]->HandleInterrupt(esp);
     }
+    else if (interruptNumber == 0x2E){
+        // CPU transfer control to kernel
+    }
     else if (interruptNumber > hardwareInterruptOffset)
     {
         printf("UNHANDLED INTERRUPT");

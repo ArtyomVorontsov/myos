@@ -4,6 +4,7 @@
 #include <filesystem/fat-file-reader.hpp>
 #include <filesystem/fat-file-writer.hpp>
 #include <stdio.h>
+#include <string.h>
 
 #define ATTR_READ_ONLY 0x01
 #define ATTR_HIDDEN 0x02
@@ -83,7 +84,9 @@ FATVFS::FATVFS(AdvancedTechnologyAttachment *hd)
     FATFileReader *fileReader = (FATFileReader *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileReader));
     FATFileWriter *fileWriter = (FATFileWriter *)MemoryManager::activeMemoryManager->malloc(sizeof(FATFileWriter));
 
-    new (rootFileEnumerator) FATFileEnumerator(*rootDirectoryEntry, fileReader, fileWriter);
+    new (rootFileEnumerator) FATFileEnumerator(*rootDirectoryEntry, fileReader, fileWriter, NULL);
+
+    this->currentDirectory = rootFileEnumerator;
 
     this->directoryTraversal = traverseDirectories(
         rootFileEnumerator,
@@ -211,7 +214,7 @@ FATFileEnumerator *FATVFS::traverseDirectories(
             new (fileWriter) FATFileWriter(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
 
             FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
-            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter);
+            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter, rootFileEnumerator);
 
             fileEnumeratorEntriesAmount++;
         }
@@ -228,8 +231,7 @@ FATFileEnumerator *FATVFS::traverseDirectories(
             new (fileWriter) FATFileWriter(hd, directoryEntry, startInSectorsDATA, sectorPerCluster);
 
             FATFileEnumerator *fileEnumeratorPtr = fileEnumeratorEntries + fileEnumeratorEntriesAmount;
-            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter);
-
+            new (fileEnumeratorPtr) FATFileEnumerator(*directoryEntry, fileReader, fileWriter, rootFileEnumerator);
 
             this->traverseDirectories(fileEnumeratorPtr, level);
 
@@ -248,6 +250,72 @@ FATFileEnumerator *FATVFS::traverseDirectories(
 void FATVFS::printDirectoryTraversal()
 {
     this->printDirectoryTraversalRecursive(this->directoryTraversal, 1);
+}
+
+FATFileEnumerator *FATVFS::getFileByNameInCurrentDirectory(char *name)
+{
+    uint8_t directoryIndex = 0;
+    char fileName[8];
+    char fileName2[8];
+
+    for (size_t i = 0; i < this->currentDirectory->childrenAmount; i++)
+    {
+
+        // TODO: rework this mess
+        bool spaceWasRead = false;
+        for (int j = 0; j < 8; j++)
+        {
+            if (spaceWasRead || this->currentDirectory->children[i].directoryEntry.name[j] == ' ')
+            {
+                fileName[j] = '\0';
+            }
+            else
+            {
+                fileName[j] = this->currentDirectory->children[i].directoryEntry.name[j];
+
+                if (fileName[j] == ' ')
+                {
+                    spaceWasRead = true;
+                }
+            }
+
+            fileName2[j] = name[j];
+        }
+        fileName[7] = '\0';
+        fileName2[7] = '\0';
+
+        if (strcmp(fileName, fileName2) == 0)
+        {
+            directoryIndex = i;
+            break;
+        }
+    }
+
+    return &this->currentDirectory->children[directoryIndex];
+}
+
+// TODO: rewrite on file id
+void FATVFS::setCurrentDirectory(char *name)
+{
+    // TODO this .., . should be real directories from FAT32, rework
+    if (strcmp("..", name) == 0)
+    {
+        this->currentDirectory = this->currentDirectory->getParent();
+    }
+    else if (strcmp(".", name) == 0)
+    {
+        this->currentDirectory = this->currentDirectory;
+    }
+    else
+    {
+        // TODO: rewrite on file id
+        this->currentDirectory = this->getFileByNameInCurrentDirectory(name);
+    }
+}
+
+FATFileEnumerator *FATVFS::getCurrentDirectory()
+{
+    return this->currentDirectory;
 }
 
 void FATVFS::printDirectoryTraversalRecursive(FATFileEnumerator *parentDir, uint32_t level)

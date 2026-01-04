@@ -23,6 +23,9 @@ public:
     void printFileInfo(DirectoryEntryFat32 *directoryEntry, uint8_t level);
     void printDirectoryTraversal();
     void printDirectoryTraversalRecursive(FATFileEnumerator *parentDir, uint32_t level);
+    void setCurrentDirectory(char *name);
+    FATFileEnumerator *getCurrentDirectory();
+    FATFileEnumerator *getFileByNameInCurrentDirectory(char *name);
     FATFileEnumerator *traverseDirectories(
         FATFileEnumerator *rootFileEnumerator,
         uint8_t level);
@@ -34,6 +37,9 @@ public:
     uint32_t startInSectorsFAT;
     uint32_t startInSectorsDATA;
     uint8_t sectorPerCluster;
+
+private:
+    FATFileEnumerator *currentDirectory;
 };
 
 #endif
