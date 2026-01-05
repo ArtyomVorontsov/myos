@@ -3,6 +3,7 @@
 #include <software/cd/cd.hpp>
 #include <software/ls/ls.hpp>
 #include <software/write/write.hpp>
+#include <software/pwd/pwd.hpp>
 #include <stdio.h>
 #include <string.h>
 
@@ -142,6 +143,13 @@ void Shell::run()
                 Write write(fatvfs);
 
                 write.run(argument1, argument2);
+            }
+
+            if (strcmp("pwd", command) == 0)
+            {
+                Pwd pwd(fatvfs);
+
+                pwd.run(argument1);
             }
         }
     }
